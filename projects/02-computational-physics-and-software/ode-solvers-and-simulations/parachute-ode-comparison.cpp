@@ -1,6 +1,6 @@
 /* Implementation of 4 different methods to solve the parachute problem
  *
- * Made By Julian L. Avila - 20212107030
+ * Made By Julian L. Avila-Martinez
  * Computational Physics I
  */
 

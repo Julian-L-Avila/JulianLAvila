@@ -1,0 +1,16 @@
+---
+title: "2D Poisson Equation via the Galerkin Finite Element Method (FEM)"
+subtitle: "Weak Variational Formulation, Triangular Mesh Stiffness Assembly & Boundary Value Solutions"
+author: "Julian L. Avila-Martinez"
+categories: ["Numerical PDEs & Scientific Computing"]
+format:
+  html:
+    toc: true
+    code-copy: true
+---
+
+*Weak Variational Formulation, Triangular Mesh Stiffness Assembly & Boundary Value Solutions*
+
+## 2D Galerkin Finite Element Method Solver (poisson-finite-elements.ipynb)
+
+Source notebook: [`projects/02-computational-physics-and-software/ode-solvers-and-simulations/poisson-finite-elements.ipynb`](../projects/02-computational-physics-and-software/ode-solvers-and-simulations/poisson-finite-elements.ipynb)

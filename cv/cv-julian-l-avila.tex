@@ -11,8 +11,8 @@
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
 
-\definecolor{primary}{RGB}{20, 42, 92}
-\definecolor{muted}{RGB}{90, 98, 112}
+\definecolor{primary}{RGB}{88, 24, 124}
+\definecolor{secondary}{RGB}{0, 168, 150}
 
 \pagestyle{empty}
 \setlength{\parindent}{0pt}
@@ -25,13 +25,12 @@
 
 % ==================== HEADER ====================
 \begin{center}
-  {\LARGE \textbf{\color{primary} Julian Leonardo Avila-Martinez}}\\[3pt]
-  {\small Theoretical \& Computational Physicist $\cdot$ Scientific Software Engineer $\cdot$ AI-for-Science \& Mathematical Modeling}\\[3pt]
+  {\LARGE \textbf{\color{primary} Julian L. Avila-Martinez}}\\[3pt]
+  {\small Theoretical \& Computational Physicist $\cdot$ Scientific Software Developer $\cdot$ SciML \& Mathematical Modeling}\\[3pt]
   {\footnotesize
     Bogot\'a D.C., Colombia $\cdot$
     \href{mailto:jlavilam@udistrital.edu.co}{\texttt{jlavilam@udistrital.edu.co}} $\cdot$
-    \href{mailto:julianlavilam@gmail.com}{\texttt{julianlavilam@gmail.com}} $\cdot$
-    \textbf{Available Immediately}
+    \href{mailto:julianlavilam@gmail.com}{\texttt{julianlavilam@gmail.com}}
   }\\[2pt]
   {\footnotesize
     \textbf{ORCID:} \href{https://orcid.org/0009-0002-8630-1922}{\texttt{0009-0002-8630-1922}} $\cdot$
@@ -47,7 +46,7 @@
 \textbf{Universidad Distrital Francisco Jos\'e de Caldas (UDFJC)} \hfill \textbf{Bogot\'a D.C., Colombia}\\
 \textit{B.Sc. in Physics (Pregrado en F\'isica --- 5-Year Degree, 10 Semesters, 145 Credits / $\ge 240$ ECTS)} \hfill \textit{Nov 2021 -- Dec 2026}
 \begin{itemize}
-  \item \textbf{Academic Standing:} \textbf{Ranked 2nd in Graduating Cohort (Top 2\%)} $\cdot$ \textbf{Cumulative GPA: 4.54 / 5.00} (Cohort Max: 4.55 / 5.00; German Scale Equivalent: \textbf{1.7}; \textbf{ECTS Grade A}). All 145 credits and thesis defense completed (\textit{Acta No. 020 de 2026}); formal graduation ceremony December 2026 (\textbf{available immediately}).
+  \item \textbf{Status:} All 145 coursework credits and undergraduate thesis defense completed (\textit{Acta de Sustentaci\'on No. 020 de 2026}); formal graduation ceremony scheduled for December 2026.
   \item \textbf{Undergraduate Thesis (Monograph, Written in English):} \textit{``Foundations of the Dirac Equation: From Relativistic Principles to Clifford Algebras''}.
   \item \textbf{Thesis Advisor:} \textbf{Dr. Asdr\'ubal Moreno-Mosquera} (Ph.D. in Physics, Universidad de Salamanca, Spain --- IUFFyM, \texttt{amorenom@udistrital.edu.co}) $\cdot$ \textbf{Honors:} \textbf{Nominated for Meritorious Thesis (\textit{Menci\'on Meritoria})}.
 \end{itemize}
@@ -56,10 +55,10 @@
 \section{Awards and Honors}
 
 \begin{itemize}
-  \item \textbf{Academic Excellence Honor Distinction (\textit{Matr\'icula de Honor}), UDFJC (2021 -- 2025):} Awarded in \textbf{8 of 9 evaluated academic semesters} to the top 10 GPAs of the physics program with zero failed courses (semesters \texttt{2021-1}, \texttt{2022-3}, \texttt{2023-1}, \texttt{2023-3}, \texttt{2024-1}, \texttt{2024-3}, \texttt{2025-1}, and \texttt{2025-3}).
   \item \textbf{Meritorious Thesis Nomination (\textit{Menci\'on Meritoria}), UDFJC (2026):} Nominated for the undergraduate thesis monograph \textit{``Foundations of the Dirac Equation: From Relativistic Principles to Clifford Algebras''}.
   \item \textbf{Third Best Poster Award (Particle \& High-Energy Physics Category), CIFI-SEMA 2026 (May 2026):} Congreso Internacional de F\'isica e Ingenier\'ia, Universidad Sim\'on Bol\'ivar, Barranquilla (\textit{``Chiral Dirac Equation: Degrees of Freedom and Neutrino's Mass''}).
   \item \textbf{Best Poster Award (Research Seedbed Category), I Semana de las Ciencias, UDFJC (Nov 2023):} Facultad de Ciencias Matem\'aticas y Naturales (\textit{``Asymmetric Capacitor -- Lifter''}, CUEVA Research Group).
+  \item \textbf{Academic Excellence Honor Distinction (\textit{Matr\'icula de Honor}), UDFJC (2021 -- 2025):} Awarded across multiple academic semesters in recognition of academic excellence in the Physics program.
 \end{itemize}
 
 % ==================== RESEARCH & SCIENTIFIC COMPUTING EXPERIENCE ====================
@@ -70,7 +69,7 @@
 \begin{itemize}
   \item Formulated the free and interacting Dirac field from first principles via the representation theory of real Clifford algebras $\mathcal{C}\ell_{1,3}(\mathbb{R})$, the double cover $\mathrm{Spin}^+(1,3) \to \mathrm{SO}^+(1,3)$, and the Yvon--Takabayashi polar decomposition $\psi = \rho^{1/2} e^{\beta I / 2} R$.
   \item Derived pseudo-Hermitian chiral mass generation $M = m_1 \mathbb{I}_4 + i m_2 \gamma^5$ ($\eta H \eta^{-1} = H^\dagger$), obtaining seesaw mass splittings $m_\pm = m_1 \pm \sqrt{m_1^2 - m_2^2}$ for neutrino phenomenology without auxiliary scalar fields.
-  \item Co-developed \textbf{\texttt{dirac-solver}}, an open-source C++17 / \texttt{pybind11} / Python scientific library (MIT License; software registration pending) implementing staggered-leapfrog FDTD and Split-Operator FFT integrators for the (1D/2D/3D) Dirac equation with Builder/Strategy design patterns, Doxygen documentation, HDF5 I/O, and \texttt{pytest} validation suites.
+  \item Co-developed \textbf{\texttt{dirac-solver}}, an open-source C++17 / \texttt{pybind11} / Python scientific library (MIT License; software registration pending) implementing staggered-leapfrog FDTD and spectral integrators for the (1D/2D/3D) Dirac equation with Builder/Strategy design patterns, Doxygen documentation, HDF5 I/O, and \texttt{pytest} validation suites.
 \end{itemize}
 
 \vspace{3pt}
@@ -82,12 +81,12 @@
 \end{itemize}
 
 \vspace{3pt}
-\textbf{Computational Physics, Scientific Machine Learning (SciML) \& AI Benchmark Engineering} \hfill \textbf{2024 -- 2026}\\
+\textbf{Computational Physics, Scientific Machine Learning (SciML) \& Numerical Modeling} \hfill \textbf{2024 -- 2026}\\
 \textit{Department of Physics, UDFJC}
 \begin{itemize}
   \item \textbf{Numerical PDEs, ODEs \& HPC Benchmarking:} Implemented and validated $\mathcal{O}(h^6)$ Numerov quantum solvers, graphene tight-binding dispersion, Velocity-Verlet Fortran 90 Molecular Dynamics, C++ 2D pipe fluid flow, Julia double-pendulum dynamics, and a 5-language 2D Laplace PDE benchmark (Fortran 90: \texttt{0.097 s}, C: \texttt{0.111 s}, MATLAB: \texttt{0.130 s}, C++: \texttt{0.172 s}, Python: \texttt{7.163 s}; $\sim 73.8\times$ compiled speedup).
   \item \textbf{SciML, PINNs \& High-Energy Data Mining:} Built Physics-Informed Neural Networks (PINNs) and 2D Galerkin Finite Element Method (FEM) solvers; benchmarked 11 ML architectures on 36,358 LHC collision events, achieving \textbf{90.3\% accuracy (0.958 ROC-AUC)} with a 2-layer MLP (\texttt{32-16}, ReLU).
-  \item \textbf{AI-for-Science Benchmark Problems \& Automated Graders:} Created multi-stage quantum mechanics benchmark tasks, rubrics, and step-by-step \LaTeX{} reference derivations (4D Hilbert space CSCO $\{H,A,B\}$) to audit LLM symbolic reasoning; authored automated \texttt{pytest}/\texttt{unittest} test suites and C++ Integral Absolute Error (IAE) model validators against analytical and experimental data.
+  \item \textbf{Analytical/Experimental Model Validation \& Benchmark Design:} Designed multi-stage quantum mechanics benchmark tasks and step-by-step \LaTeX{} reference derivations (4D Hilbert space CSCO $\{H,A,B\}$) to audit LLM symbolic reasoning; validated numerical simulations against experimental FFT spectra and thermal step-response data.
 \end{itemize}
 
 % ==================== PUBLICATIONS, SOFTWARE & PRESENTATIONS ====================
@@ -121,9 +120,9 @@
 \section{Technical Stack, Languages \& Academic References}
 
 \begin{itemize}
-  \item \textbf{Scientific Python \& SciML Stack:} \texttt{NumPy}, \texttt{SciPy}, \texttt{SymPy}, \texttt{PyTorch} (PINNs/Deep Learning), \texttt{scikit-learn}, \texttt{Pandas}, \texttt{h5py} (HDF5), \texttt{pybind11}, \texttt{Matplotlib}, \texttt{pytest}, \texttt{unittest}, Jupyter Notebooks.
+  \item \textbf{Scientific Python \& SciML Stack:} \texttt{NumPy}, \texttt{SciPy}, \texttt{SymPy}, \texttt{PyTorch} (PINNs/Deep Learning), \texttt{scikit-learn}, \texttt{Pandas}, \texttt{h5py} (HDF5), \texttt{pybind11}, \texttt{Matplotlib}, \texttt{pytest}, \texttt{unittest}, Quarto \& Jupyter Notebooks.
   \item \textbf{Compiled Languages \& Engineering Tools:} \textbf{C / C++17} (CMake, OOP, FDTD/ODEs), \textbf{Fortran 90/95} (Molecular Dynamics, RRMHD, PDEs), \textbf{Julia}, \textbf{MATLAB}, GNU/Linux (Debian), Git, Bash, Doxygen, \LaTeX{} (Bib\LaTeX, Beamer, TikZ, \texttt{circuitikz}), Gnuplot, KiCad.
-  \item \textbf{Languages:} \textbf{Spanish} (Native) $\cdot$ \textbf{English} (\textbf{C1 CEFR --- IELTS Academic 8.0}: Listening 9.0, Reading 8.5, Speaking 7.5, Writing 6.0; thesis written in English) $\cdot$ \textbf{German} (\textbf{B1 CEFR}).
+  \item \textbf{Languages:} \textbf{Spanish} (Native) $\cdot$ \textbf{English} (\textbf{C1 CEFR --- IELTS Academic 8.0}; thesis written in English) $\cdot$ \textbf{German} (\textbf{B1 CEFR}).
   \item \textbf{Academic References:}
     \textbf{Dr. Asdr\'ubal Moreno-Mosquera} (Tenured Prof., UDFJC; Ph.D. U. de Salamanca, \texttt{amorenom@udistrital.edu.co}) $\cdot$
     \textbf{Dr. Jos\'e Alfonso Leyva Rojas} (Tenured Prof., PU Javeriana; Ph.D. JGU Mainz, \texttt{leyvaa@javeriana.edu.co}) $\cdot$

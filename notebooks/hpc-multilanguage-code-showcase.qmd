@@ -1,0 +1,1150 @@
+---
+title: "Multi-Language Scientific Computing & HPC Code Showcase (Fortran 90, C, C++17, Python)"
+subtitle: "5-Language 2D Laplace PDE Benchmark, Fortran 90 Molecular Dynamics, C++ Pipe Fluid Flow, Unit-Tested Ideal Gas & Control Systems"
+author: "Julian L. Avila-Martinez"
+categories: ["High-Performance Computing & Software Engineering"]
+format:
+  html:
+    toc: true
+    code-copy: true
+---
+
+*5-Language 2D Laplace PDE Benchmark, Fortran 90 Molecular Dynamics, C++ Pipe Fluid Flow, Unit-Tested Ideal Gas & Control Systems*
+
+## Fortran 90: 2D Laplace Finite-Difference Solver — 0.097 s / 73.8x Speedup (diffinita.f90)
+
+```fortran
+! diffinita.f90 modificado para recibir N desde línea de comandos
+program fdm1d
+    implicit none
+    integer :: i, N, nn, ios
+    real*8, allocatable :: A(:,:), b(:), x(:)
+    real*8 :: xi, xf, vi, vf, h, R, P, Q, y
+    character(len=32) :: arg
+    
+    ! Leer argumento N (nodos interiores)
+    call get_command_argument(1, arg, status=ios)
+    if (ios /= 0) then
+        print *, "Error: debe pasar N (nodos interiores) como argumento."
+        stop 1
+    end if
+    read(arg, *, iostat=ios) N
+    if (ios /= 0 .or. N < 1) then
+        print *, "Error: N debe ser entero positivo."
+        stop 1
+    end if
+    
+    nn = N + 2    ! incluir puntos de frontera
+    
+    ! Parámetros del problema
+    xi = -1.0d0
+    xf =  2.0d0
+    vi = -1.0d0
+    vf =  1.0d0
+    h  = (xf - xi) / (nn - 1)
+    
+    ! Reservar memoria
+    allocate(A(N,N), b(N), x(N))
+    A = 0.0d0
+    b = 0.0d0
+    x = 0.0d0
+    
+    R =  1.0d0 / (h*h)
+    P = -2.0d0 / (h*h)
+    Q =  1.0d0 / (h*h)
+    
+    ! Primer renglón
+    A(1,1) = P
+    if (N > 1) A(1,2) = Q
+    call ladoDerecho(xi + h, y)
+    b(1) = y - vi*R
+    
+    ! Renglones intermedios
+    do i = 2, N-1
+        A(i,i-1) = R
+        A(i,i)   = P
+        A(i,i+1) = Q
+        call ladoDerecho(xi + i*h, y)
+        b(i) = y
+    end do
+    
+    ! Último renglón
+    if (N > 1) A(N,N-1) = R
+    A(N,N) = P
+    call ladoDerecho(xi + N*h, y)
+    b(N) = y - vf*Q
+    
+    ! Resolver sistema por Gauss-Seidel
+    call gaussSeidel(A, x, b, N, 10000)
+    
+    ! Guardar resultados
+    open(unit=10, file="resultado_"//trim(adjustl(arg))//".dat", status="replace")
+    write(10, '(F10.5,1X,F10.5)') xi, vi
+    do i = 1, N
+        write(10, '(F10.5,1X,F10.5)') xi + i*h, x(i)
+    end do
+    write(10, '(F10.5,1X,F10.5)') xf, vf
+    close(10)
+    
+end program fdm1d
+
+subroutine ladoDerecho(x, y)
+    implicit none
+    real*8, intent(in)  :: x
+    real*8, intent(out) :: y
+    real*8, parameter :: pi = 3.14159265358979323846d0
+    y = -pi*pi * cos(pi*x)
+end subroutine ladoDerecho
+
+subroutine gaussSeidel(a, x, b, nx, iter)
+    implicit none
+    integer, intent(in)    :: nx, iter
+    real*8, intent(in)     :: a(nx,nx), b(nx)
+    real*8, intent(inout)  :: x(nx)
+    integer :: i, j, m
+    real*8 :: sum
+    
+    do m = 1, iter
+        do i = 1, nx
+            sum = 0.0d0
+            do j = 1, nx
+                if (i /= j) sum = sum + a(j,i)*x(j)
+            end do
+            x(i) = (b(i) - sum)/a(i,i)
+        end do
+    end do
+end subroutine gaussSeidel
+```
+
+## C: 2D Laplace Finite-Difference Solver — 0.111 s / 64.5x Speedup (diffinita.c)
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+// Function to calculate the right-hand side of the equation
+double ladoDerecho(double x) {
+    const double pi = 3.14159265358979323846;
+    return -pi * pi * cos(pi * x);
+}
+
+// Function to solve the system of equations using the Gauss-Seidel method
+void gaussSeidel(double **A, double *x, double *b, int n, int iter_max) {
+    int i, j, m;
+    double sum;
+
+    for (m = 0; m < iter_max; m++) {
+        for (i = 0; i < n; i++) {
+            sum = 0.0;
+            for (j = 0; j < n; j++) {
+                if (i != j) {
+                    sum += A[i][j] * x[j];
+                }
+            }
+            x[i] = (b[i] - sum) / A[i][i];
+        }
+    }
+}
+
+int main(int argc, char *argv[]) {
+    int N, nn, i;
+    double xi, xf, vi, vf, h, R, P, Q, y;
+    double **A; // Changed to double**
+    double *b, *x;
+    char filename[50];
+
+    // Check for the correct number of arguments
+    if (argc != 2) {
+        printf("Error: Debe pasar N (nodos interiores) como argumento.\n");
+        return 1;
+    }
+
+    // Read N from the command-line argument
+    if (sscanf(argv[1], "%d", &N) != 1 || N < 1) {
+        printf("Error: N debe ser un entero positivo.\n");
+        return 1;
+    }
+
+    nn = N + 2;
+
+    // Set problem parameters
+    xi = -1.0;
+    xf = 2.0;
+    vi = -1.0;
+    vf = 1.0;
+    h = (xf - xi) / (nn - 1);
+
+    // Allocate memory
+    A = (double **)malloc(N * sizeof(double *)); // Allocate memory for the rows
+    if (A == NULL && N > 0) {
+        printf("Error: No se pudo asignar memoria para la matriz A (rows).\n");
+        return 1;
+    }
+    if (N > 0) {
+        for (i = 0; i < N; i++) {
+            A[i] = (double *)malloc(N * sizeof(double)); // Allocate memory for the columns
+            if (A[i] == NULL) {
+                printf("Error: No se pudo asignar memoria para la matriz A (columns).\n");
+                // Free previously allocated rows
+                for (int j = 0; j < i; j++) {
+                    free(A[j]);
+                }
+                free(A);
+                return 1;
+            }
+        }
+    }
+
+
+    b = (double *)malloc(N * sizeof(double));
+    x = (double *)malloc(N * sizeof(double));
+    if (N > 0 && (b == NULL || x == NULL)) {
+        printf("Error: No se pudo asignar memoria para los vectores b o x.\n");
+        // Free previously allocated memory
+        if (A != NULL) {
+            for (i = 0; i < N; i++) {
+                free(A[i]);
+            }
+            free(A);
+        }
+        free(b);
+        free(x);
+        return 1;
+    }
+
+    // Initialize A, b, and x
+    if (N > 0) {
+        for (i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                A[i][j] = 0.0;
+            }
+            b[i] = 0.0;
+            x[i] = 0.0;
+        }
+    }
+
+    R = 1.0 / (h * h);
+    P = -2.0 / (h * h);
+    Q = 1.0 / (h * h);
+
+    // First row
+    if (N > 0) {
+        A[0][0] = P;
+        if (N > 1) A[0][1] = Q;
+        y = ladoDerecho(xi + h);
+        b[0] = y - vi * R;
+    }
+
+    // Intermediate rows
+    for (i = 1; i < N - 1; i++) {
+        A[i][i - 1] = R;
+        A[i][i] = P;
+        A[i][i + 1] = Q;
+        y = ladoDerecho(xi + (i + 1) * h);
+        b[i] = y;
+    }
+
+    // Last row
+    if (N > 1) A[N - 1][N - 2] = R;
+    if (N > 0) {
+        A[N - 1][N - 1] = P;
+        y = ladoDerecho(xi + N * h);
+        b[N - 1] = y - vf * Q;
+    }
+
+    // Solve the system using Gauss-Seidel
+    if (N > 0) {
+        gaussSeidel(A, x, b, N, 10000);
+    }
+
+    // Save the results to a file
+    sprintf(filename, "resultado_%d.dat", N);
+    FILE *fp = fopen(filename, "w");
+    if (fp == NULL) {
+        printf("Error: No se pudo abrir el archivo %s para escritura.\n", filename);
+        // Free previously allocated memory
+        if (A != NULL) {
+            for (i = 0; i < N; i++) {
+                free(A[i]);
+            }
+            free(A);
+        }
+        free(b);
+        free(x);
+        return 1;
+    }
+
+    fprintf(fp, "%10.5f %10.5f\n", xi, vi);
+    for (i = 0; i < N; i++) {
+        fprintf(fp, "%10.5f %10.5f\n", xi + (i + 1) * h, x[i]);
+    }
+    fprintf(fp, "%10.5f %10.5f\n", xf, vf);
+    fclose(fp);
+
+
+    // Free allocated memory
+    if (A != NULL) {
+        for (i = 0; i < N; i++) {
+            free(A[i]);
+        }
+        free(A);
+    }
+    free(b);
+    free(x);
+
+    return 0;
+}
+
+```
+
+## Python: 2D Laplace Finite-Difference Baseline (diffinita.py)
+
+```python
+import numpy as np
+import sys
+
+def ladoDerecho(x):
+    """
+    Calculates the right-hand side of the differential equation.
+
+    Args:
+        x (float): The value of x.
+
+    Returns:
+        float: The result of the calculation.
+    """
+    pi = np.pi
+    return -pi * pi * np.cos(pi * x)
+
+def gaussSeidel(A, x, b, nx, iter_max=10000):
+    """
+    Solves a system of linear equations using the Gauss-Seidel method.
+
+    Args:
+        A (numpy.ndarray): The coefficient matrix.
+        x (numpy.ndarray): The initial guess for the solution vector (modified in place).
+        b (numpy.ndarray): The right-hand side vector.
+        nx (int): The dimension of the system.
+        iter_max (int, optional): The maximum number of iterations. Defaults to 10000.
+    """
+    for m in range(iter_max):
+        for i in range(nx):
+            sum_val = 0.0
+            for j in range(nx):
+                if i != j:
+                    sum_val += A[i, j] * x[j]  # Corrected indexing to A[i, j]
+            x[i] = (b[i] - sum_val) / A[i, i]
+
+def fdm1d():
+    """
+    Solves a 1D finite difference problem.
+    """
+    # Leer argumento N (nodos interiores)
+    if len(sys.argv) < 2:
+        print("Error: debe pasar N (nodos interiores) como argumento.")
+        sys.exit(1)
+    try:
+        N = int(sys.argv[1])
+    except ValueError:
+        print("Error: N debe ser entero positivo.")
+        sys.exit(1)
+
+    if N < 1:
+        print("Error: N debe ser entero positivo.")
+        sys.exit(1)
+
+    nn = N + 2  # incluir puntos de frontera
+
+    # Parámetros del problema
+    xi = -1.0
+    xf = 2.0
+    vi = -1.0
+    vf = 1.0
+    h = (xf - xi) / (nn - 1)
+
+    # Reservar memoria
+    A = np.zeros((N, N))
+    b = np.zeros(N)
+    x = np.zeros(N)
+
+    R = 1.0 / (h * h)
+    P = -2.0 / (h * h)
+    Q = 1.0 / (h * h)
+
+    # Primer renglón
+    A[0, 0] = P
+    if N > 1:
+        A[0, 1] = Q
+    y = ladoDerecho(xi + h)
+    b[0] = y - vi * R
+
+    # Renglones intermedios
+    for i in range(1, N - 1):
+        A[i, i - 1] = R
+        A[i, i] = P
+        A[i, i + 1] = Q
+        y = ladoDerecho(xi + (i + 1) * h) # changed i to i+1 to match fortran
+        b[i] = y
+
+    # Último renglón
+    if N > 1:
+        A[N - 1, N - 2] = R
+    A[N - 1, N - 1] = P
+    y = ladoDerecho(xi + N * h)
+    b[N - 1] = y - vf * Q
+
+    # Resolver sistema por Gauss-Seidel
+    gaussSeidel(A, x, b, N, 10000)
+
+    # Guardar resultados
+    filename = f"resultado_{N}.dat" # changed formatting to use f-strings
+    try:
+        with open(filename, "w") as f:
+            f.write(f"{xi:10.5f} {vi:10.5f}\n")
+            for i in range(N):
+                f.write(f"{xi + (i+1) * h:10.5f} {x[i]:10.5f}\n") # changed i to i+1 to match fortran
+            f.write(f"{xf:10.5f} {vf:10.5f}\n")
+    except Exception as e:
+        print(f"An error occurred while saving the results: {e}")
+
+if __name__ == "__main__":
+    fdm1d()
+
+```
+
+## Fortran 90: Velocity-Verlet Molecular Dynamics Main Program (DM.f90)
+
+```fortran
+!PROGRAMA REALIZADO POR JOSE MEJIA LOPEZ
+!ultima actualizacion: 15/04/2020
+! Dinamica Molecular con potenciales de Lennard-Jones
+PROGRAM DM
+  USE modDM
+  implicit none
+  integer::i,j,nt,np
+  real(8)::cc,time1,time2,pEtot,pEpot,pEcin,pTc
+  character(len=30)::archE,archC
+  
+  CALL CPU_TIME(time1)
+
+  ! lee datos desde input.dat
+  call leer
+
+  ! parametros iniciales
+  call inicio
+
+  ! Integra ecuaciones de movimiento
+
+  !equilibracion
+  do nt=1,neq
+     call fuerzas
+     call integracion(nt)
+     call guardar(nt)
+  end do
+
+  !promedios
+  pEtot=0.d0; pEpot=0.d0; pEcin=0.d0; pTc=0.d0
+  do nt=neq+1,Ndm
+     call fuerzas
+     call integracion(nt)
+     call guardar(nt)
+     pEtot=pEtot+Etot; pEpot=pEpot+Epot
+     pEcin=pEcin+Ecin; pTc=pTc+Tc
+  end do
+  np=Ndm-neq
+  pEtot=pEtot/np; pEpot=pEpot/np
+  pEcin=pEcin/np; pTc=pTc/np
+
+  write(6,"(/,'promedios:',4x,'Etot',8x,'Epot',6x,'Ecin',9x,'T')")
+  write(6,"(10x,4(1x,F10.5),/)")pEtot,pEpot,pEcin,pTc
+
+  close(2); close(3)
+  
+  CALL CPU_TIME(time2)
+  write (6,*) "tiempo de corrida:",(time2-time1)/60, " min"
+  
+END PROGRAM DM
+
+!*********************************
+SUBROUTINE guardar(nt)
+  USE modDM
+  implicit none
+  integer,INTENT(IN)::nt
+  integer::i
+  real(8)::cc,time1,time2
+  
+  !guardo configuraciones
+  if(mod(nt,div).eq.0) then
+     write(2,*)Npar; write(2,*)'nt= ',nt
+     do i=1,Npar
+        write(2,"(a2,3(1x,F11.6))")el(i),vr(i,:)
+     enddo
+  endif
+
+  !guardo observables
+  write(3,"(I6,3(1x,F11.6))")nt,Etot,Epot,Tc
+  
+END SUBROUTINE guardar
+
+
+```
+
+## Fortran 90: Lennard-Jones 12-6 Pairwise Force Kernel (fuerzas.f90)
+
+```fortran
+!PROGRAMA REALIZADO POR JOSE MEJIA LOPEZ
+!ultima actualizacion: 15/04/2020
+!calcula las fuerzas entre particulas y la energia potencial del sistema,
+SUBROUTINE fuerzas
+  USE modDM
+  implicit none
+  integer::i,j
+  real(8)::r(3),r2,r_2,r_6,ff
+
+  Epot=0.d0; vF=0.d0
+  do i=1,Npar-1
+     do j=i+1,Npar
+        r(:)=vr(i,:)-vr(j,:)
+        r=r-L*Anint(r/L) !condiciones de borde periodica
+        r2=dot_product(r,r)
+        if(r2.lt.Rcut2)then
+           r_2=1.d0/r2; r_6=r_2**3
+           ff=r_2*r_6*(r_6-0.5d0)
+           vF(i,:)=vF(i,:)+ff*r(:)
+           vF(j,:)=vF(j,:)-ff*r(:)
+           Epot=Epot+r_6*(r_6-1.d0)
+        endif
+     end do
+  end do
+  Epot=(Epot*4.d0-Ecut)/Npar  !energia potencial por particula
+  vF=vF*48.d0
+
+END SUBROUTINE fuerzas
+
+
+
+```
+
+## Fortran 90: Symplectic Velocity-Verlet Integrator (integracion.f90)
+
+```fortran
+!PROGRAMA REALIZADO POR JOSE MEJIA LOPEZ
+!ultima actualizacion: 16/04/2020
+!algoritmo de Verlet ensenble microcanonico
+SUBROUTINE integracion(nt)
+  USE modDM
+  implicit none
+  integer,INTENT(IN)::nt
+  integer::i,j
+  real(8)::xx(3),vcm(3),c(3)
+
+  vcm=0.d0; Ecin=0.d0
+  do i =1,Npar
+     xx(:)=2.d0*vr(i,:)-r_old(i,:)+vF(i,:)*dt2
+
+     !condiciones de borde periodica
+     where(abs(xx(:)).gt.L2)&
+          xx(:)=xx(:)-L*anint(xx(:)/L) 
+     c(:)=xx(:)-r_old(i,:)
+     where(abs(c(:)).gt.L2)&
+          c(:)=c(:)-L*anint(c(:)/L)
+     !
+     
+     vv(i,:)=0.5d0*c(:)/dt
+     vcm(:)=vcm(:)+vv(i,:)
+     Ecin=Ecin+dot_product(vv(i,:),vv(i,:))
+
+     r_old(i,:)=vr(i,:)
+     vr(i,:)=xx(:)
+
+  end do
+  Tc=Ecin/Nfree        !calculo la temperatura instantanea
+  Ecin=0.5d0*Ecin/Npar !energia cinetica por particula
+  Etot=Ecin+Epot       !energia total por particula
+  
+END SUBROUTINE integracion
+
+
+```
+
+## C++17: 2D Viscous Pipe Fluid Flow Simulator (fluid-sim.cpp)
+
+```cpp
+#include <GLFW/glfw3.h>
+#include <vector>
+#include <cmath>
+#include <random>
+#include <algorithm>
+
+const int NUM_PARTICLES = 5000;
+const float DT = 0.005f;
+const float PIPE_LENGTH = 1.0f;
+const float PRESSURE_FORCE = 0.5f;  // Increased pressure force for noticeable effect
+const float MAX_VELOCITY = 5.0f;
+const float INJECTION_RATE = 5;
+const int N_MC_SAMPLES = 2; // Number of Monte Carlo samples for velocity estimation
+
+std::mt19937 rng(std::random_device{}());
+std::uniform_real_distribution<float> rand01(0.0f, 1.0f);
+std::uniform_real_distribution<float> randSymmetric(-0.01f, 0.01f);
+
+// Particle structure
+struct Particle {
+	float x, y, vx, vy;
+};
+
+std::vector<Particle> particles;
+
+// Define varying pipe width
+float pipeWidth(float x) {
+	static constexpr float midX = 0.5f;
+	return 0.4f - 0.15f * expf(-10 * powf(x - midX, 2));
+}
+
+// Pressure as a function of x (position)
+float pressure(float x) {
+	float maxWidth = 0.4f;
+	float currentWidth = pipeWidth(x);
+	float particleDensity = NUM_PARTICLES / currentWidth;  // Particle density in current region
+	float temperature = 1.0f;  // Assuming constant temperature
+	float pressureValue = (particleDensity * temperature) * (currentWidth / maxWidth);
+	return PRESSURE_FORCE * pressureValue;
+}
+
+float maxwellBoltzmannVelocity(float temperature) {
+	float randVel = rand01(rng);  // Random value between 0 and 1
+	return sqrt(-2.0f * log(randVel)) * sqrt(temperature);  // Sample velocity from MB distribution
+}
+
+// Initialize particles within the pipe
+void initParticles() {
+	particles.clear();
+	particles.reserve(NUM_PARTICLES);
+
+	float temperature = 1.0f;
+
+	for (int i = 0; i < NUM_PARTICLES; ++i) {
+		float y = rand01(rng) * pipeWidth(0) - pipeWidth(0) / 2;
+		float vx = maxwellBoltzmannVelocity(temperature);
+		float vy = maxwellBoltzmannVelocity(temperature);
+		particles.push_back({0.0f, y, vx, vy});
+	}
+}
+
+// Inject new particles at the left boundary
+void injectParticles() {
+	for (int i = 0; i < INJECTION_RATE; i++) {
+		float y = rand01(rng) * pipeWidth(0) - pipeWidth(0) / 2;
+		float vx = 0.5f + 0.2f * rand01(rng);
+		particles.push_back({0.0f, y, vx, 0.0f});
+	}
+}
+
+// Biot-Savart kernel for 2D
+std::vector<float> biotSavartKernel(float dx, float dy) {
+	std::vector<float> k = {1e-6f, 1e-6f};
+	float r2 = dx * dx + dy * dy;
+	if (r2 < 1e-6f) return k;  // Avoid division by zero by returning a small value
+	k[0] = dx / (2.0f * M_PI * r2);
+	k[1] = dy / (2.0f * M_PI * r2);
+	return k;
+}
+
+// Monte Carlo estimation of velocity using Biot-Savart law
+void updateParticles() {
+	std::vector<Particle> newParticles;
+	newParticles.reserve(particles.size());
+
+	for (auto &p : particles) {
+		// Monte Carlo integration to estimate velocity
+		float vx_new = p.vx;
+		float vy_new = p.vy;
+
+		for (int i = 0; i < N_MC_SAMPLES; ++i) {
+			// Random sample point from particles to estimate vorticity
+			int randIndex = static_cast<int>(rand01(rng) * (particles.size() - 1));
+			auto &sampledParticle = particles[randIndex];
+
+			float dx = p.x - sampledParticle.x;
+			float dy = p.y - sampledParticle.y;
+
+			std::vector<float> kernel = biotSavartKernel(dx, dy);
+			float vorticity = sampledParticle.vx * dy - sampledParticle.vy * dx; // Simplified 2D vorticity
+
+			float prob = rand01(rng);
+
+			vx_new -= vorticity * kernel[1] / prob;
+			vy_new += vorticity * kernel[0] / prob;
+		}
+
+		// Average the results from Monte Carlo
+		vx_new /= N_MC_SAMPLES;
+		vy_new /= N_MC_SAMPLES;
+
+		// Pressure gradient: the force induced by the pressure difference between neighboring particles
+		float pressureLeft = pressure(p.x);
+		float pressureRight = pressure(p.x + DT);  // Approximate right side of particle
+		float pressureGradient = (pressureRight - pressureLeft) / DT;
+		float pressureForce = pressureGradient * 0.01f;  // Scale factor for force magnitude
+
+		// Update particle velocity with the pressure gradient force
+		vx_new += pressureForce;
+
+		// Update particle velocity with Biot-Savart result (for vortex interaction)
+		p.vx = vx_new;
+		p.vy = vy_new;
+
+		// Move particle based on updated velocity
+		p.x += p.vx * DT;
+		p.y += p.vy * DT;
+
+		// Constrain particles within pipe boundaries (reflective walls)
+		float width = pipeWidth(p.x);
+		float halfWidth = width / 2.0f;
+		if (std::abs(p.y) > halfWidth) {
+			p.y = std::copysign(halfWidth, p.y);
+			p.vy *= -0.5f; // Damping
+		}
+
+		// Remove particles at the right boundary, keep the rest
+		if (p.x < PIPE_LENGTH) {
+			newParticles.push_back(p);
+		}
+	}
+
+	particles = std::move(newParticles);
+	injectParticles();
+}
+
+// Render pipe walls
+void renderPipe() {
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glBegin(GL_LINE_STRIP);
+	for (float x = 0; x <= PIPE_LENGTH; x += 0.02f) {
+		glVertex2f(x, pipeWidth(x) / 2.0f);
+	}
+	glEnd();
+
+	glBegin(GL_LINE_STRIP);
+	for (float x = 0; x <= PIPE_LENGTH; x += 0.02f) {
+		glVertex2f(x, -pipeWidth(x) / 2.0f);
+	}
+	glEnd();
+}
+
+// Render particles
+void renderParticles() {
+	glBegin(GL_POINTS);
+	for (const auto &p : particles) {
+		float speedFactor = std::min(1.0f, std::abs(p.vx) / MAX_VELOCITY);
+		glColor3f(1.0f - speedFactor, 1.0f, speedFactor);
+		glVertex2f(p.x, p.y);
+	}
+	glEnd();
+}
+
+// OpenGL display function
+void display() {
+	glClear(GL_COLOR_BUFFER_BIT);
+	renderPipe();
+	renderParticles();
+}
+
+// Main function
+int main() {
+	if (!glfwInit()) return -1;
+	GLFWwindow *window = glfwCreateWindow(800, 400, "2D Fluid Simulation with Pressure Gradient", NULL, NULL);
+	if (!window) { glfwTerminate(); return -1; }
+
+	glfwMakeContextCurrent(window);
+	glOrtho(0, PIPE_LENGTH, -0.3, 0.3, -1, 1);
+
+	initParticles();
+
+	while (!glfwWindowShouldClose(window)) {
+		updateParticles();
+		display();
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glfwDestroyWindow(window);
+	glfwTerminate();
+	return 0;
+}
+
+
+```
+
+## Python unittest: Automated Unit Test Suite for 2D Ideal Gas Engine (test_gas.py)
+
+```python
+"""
+Pruebas unitarias para la simulación de gas ideal.
+
+Verifica la lógica de la clase Particula y la física de colisiones
+(conservación de energía y momento) en la simulación.
+"""
+
+import unittest
+import numpy as np
+from gas_ideal.particula import Particula
+from gas_ideal.simulacion import (
+    manejar_colisiones_pared, 
+    manejar_colisiones_particulas,
+    calcular_energia_total
+)
+
+# Usamos np.testing.assert_allclose para comparar arrays de punto flotante
+from numpy.testing import assert_allclose, assert_almost_equal
+
+
+class TestParticula(unittest.TestCase):
+    """Pruebas para la clase Particula."""
+
+    def test_movimiento(self):
+        """Verifica que la partícula se mueve correctamente."""
+        p = Particula(pos=[0.0, 0.0], vel=[1.0, 2.0], masa=1.0, radio=0.1)
+        p.mover(dt=0.5)
+        assert_allclose(p.pos, [0.5, 1.0])
+
+    def test_energia_cinetica(self):
+        """Verifica el cálculo de la energía cinética."""
+        # E_k = 0.5 * m * (vx^2 + vy^2) = 0.5 * 2 * (3^2 + 4^2) = 1 * 25 = 25
+        p = Particula(pos=[0, 0], vel=[3.0, 4.0], masa=2.0, radio=0.1)
+        self.assertAlmostEqual(p.energia_cinetica(), 25.0)
+
+
+class TestSimulacion(unittest.TestCase):
+    """Pruebas para la lógica de simulación y física."""
+
+    def setUp(self):
+        """Configuración común para las pruebas de simulación."""
+        self.L = 10.0  # Caja de 10x10
+
+    def test_colision_pared_horizontal(self):
+        """Verifica la colisión elástica con una pared horizontal (superior)."""
+        p = Particula(pos=[5.0, 9.95], vel=[0.0, 1.0], masa=1.0, radio=0.1)
+        # La partícula está a 0.05 de la pared (radio=0.1, pos.y=9.95)
+        # Se moverá a y=10.05 en dt=0.1, lo que activa la colisión
+        p.mover(dt=0.1)
+        manejar_colisiones_pared(p, self.L)
+        
+        # La posición debe corregirse a L - radio
+        self.assertAlmostEqual(p.pos[1], 9.9) 
+        # La velocidad en y debe invertirse
+        self.assertAlmostEqual(p.vel[1], -1.0) 
+
+    def test_colision_pared_vertical(self):
+        """Verifica la colisión elástica con una pared vertical (izquierda)."""
+        p = Particula(pos=[0.05, 5.0], vel=[-2.0, 0.0], masa=1.0, radio=0.1)
+        p.mover(dt=0.1) # Se moverá a x = -0.15
+        manejar_colisiones_pared(p, self.L)
+        
+        self.assertAlmostEqual(p.pos[0], 0.1) # Corregida a radio
+        self.assertAlmostEqual(p.vel[0], 2.0) # Velocidad en x invertida
+
+    def test_colision_particulas_conservacion_energia_momento(self):
+        """
+        Verifica la conservación de energía y momento en una colisión
+        simple de dos partículas.
+        """
+        # Colisión frontal
+        p1 = Particula(pos=[4.0, 5.0], vel=[1.0, 0.0], masa=1.0, radio=0.1)
+        p2 = Particula(pos=[4.1, 5.0], vel=[-1.0, 0.0], masa=1.0, radio=0.1)
+        particulas = [p1, p2]
+        
+        # Calcular estados iniciales
+        E_inicial = calcular_energia_total(particulas)
+        P_inicial = p1.masa * p1.vel + p2.masa * p2.vel
+
+        # Están superpuestas, la función debe detectar la colisión
+        manejar_colisiones_particulas(particulas)
+        
+        # Calcular estados finales
+        E_final = calcular_energia_total(particulas)
+        P_final = p1.masa * p1.vel + p2.masa * p2.vel
+        
+        # En una colisión frontal 1D con masas iguales, intercambian velocidades
+        assert_allclose(p1.vel, [-1.0, 0.0], atol=1e-7)
+        assert_allclose(p2.vel, [1.0, 0.0], atol=1e-7)
+        
+        # Verificar conservación
+        assert_almost_equal(E_inicial, E_final, decimal=7)
+        assert_allclose(P_inicial, P_final, atol=1e-7)
+
+    def test_colision_particulas_caso_general(self):
+        """Prueba una colisión 2D más general."""
+        p1 = Particula(pos=[1.0, 1.0], vel=[1.0, 1.0], masa=2.0, radio=0.1)
+        p2 = Particula(pos=[1.1, 1.1], vel=[-1.0, -1.0], masa=2.0, radio=0.1)
+        particulas = [p1, p2]
+        
+        E_inicial = calcular_energia_total(particulas)
+        P_inicial = p1.masa * p1.vel + p2.masa * p2.vel
+        
+        manejar_colisiones_particulas(particulas)
+        
+        E_final = calcular_energia_total(particulas)
+        P_final = p1.masa * p1.vel + p2.masa * p2.vel
+        
+        # Verificar conservación
+        assert_almost_equal(E_inicial, E_final, decimal=7)
+        assert_allclose(P_inicial, P_final, atol=1e-7)
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)
+
+```
+
+## C++17: Integral Absolute Error (IAE) System Identification Grader (ieap.cpp)
+
+```cpp
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <string>
+#include <string_view>
+#include <vector>
+#include <algorithm>
+
+#include "./Data/parameters.h"
+
+class Model {
+  public:
+    Model(double amplitude, double initial_time, double kp, double tp1, double tp2, double td, double offset,
+        std::string name, bool is_second_order = false)
+      : amplitude_(amplitude),
+      initial_time_(initial_time),
+      kp_(kp),
+      tp1_(tp1),
+      tp2_(tp2),
+      td_(td),
+      offset_(offset),
+      name_(std::move(name)),
+      is_second_order_(is_second_order) {}
+
+    double Output(double t) const {
+      double time_factor = t - (td_ + initial_time_);
+      double response = is_second_order_ ? SecondOrderResponse(time_factor) : FirstOrderResponse(time_factor);
+      return amplitude_ * kp_ * Heaviside(time_factor) * response + offset_;
+    }
+
+    const std::string& Name() const { return name_; }
+
+    void WriteParameters(std::ofstream& file) const {
+      file << name_ << '\t' << kp_ << '\t' << tp1_ << '\t' << tp2_ << '\t' << td_ << '\n';
+    }
+
+  private:
+    static double Heaviside(double t) { return t >= 0.0 ? 1.0 : 0.0; }
+
+    double FirstOrderResponse(double time_factor) const {
+      return 1.0 - std::exp(-time_factor / tp1_);
+    }
+
+    double SecondOrderResponse(double time_factor) const {
+      return 1.0 - tp1_ * std::exp(-time_factor / tp1_) / (tp1_ - tp2_) +
+        tp2_ * std::exp(-time_factor / tp2_) / (tp1_ - tp2_);
+    }
+
+    const double amplitude_, initial_time_, kp_, tp1_, tp2_, td_, offset_;
+    const std::string name_;
+    const bool is_second_order_;
+};
+
+void WriteModelParameters(const std::string_view file_path, const std::vector<Model>& models) {
+  std::ofstream param_file(file_path.data());
+  param_file << std::fixed << std::setprecision(3);
+
+  if (!param_file) {
+    std::cerr << "Error: Unable to open file " << file_path << " for writing.\n";
+    return;
+  }
+
+  param_file << "Model\tKp\tTp1\tTp2\tTd\n";
+  for (const auto& model : models) {
+    model.WriteParameters(param_file);
+  }
+}
+
+double ComputeEAP(double plant, double model) {
+  return std::abs(model - plant);
+}
+
+double ComputeEAC(double plant, double model) {
+  return (model - plant) * (model - plant);
+}
+
+double ComputePEP(double model, double model_opt) {
+  return 100.0 * (model - model_opt) / model_opt;
+}
+
+std::vector<double> CalculateErrorMetrics(const std::vector<Model>& models, double t, double y_plant, std::vector<double>& eap, std::vector<double>& eac) {
+  std::vector<double> outputs(models.size());
+  for (size_t i = 0; i < models.size(); ++i) {
+    outputs[i] = models[i].Output(t);
+    eap[i] += ComputeEAP(y_plant, outputs[i]);
+    eac[i] += ComputeEAC(y_plant, outputs[i]);
+  }
+  return outputs;
+}
+
+void WriteErrorData(std::ofstream& out_file, double t, const std::vector<double>& eap) {
+  out_file << t;
+  for (const auto& value : eap) {
+    out_file << '\t' << value;
+  }
+  out_file << '\n';
+}
+
+int FindMinErrorIndex(const std::vector<double>& eap) {
+  return std::distance(eap.begin(), std::min_element(eap.begin(), eap.end()));
+}
+
+std::vector<double> ComputePEPForAll(const std::vector<double>& eap, int min_index) {
+  std::vector<double> pep(eap.size(), 0.0);
+  for (size_t i = 0; i < eap.size(); ++i) {
+    if (i != static_cast<size_t>(min_index)) {
+      pep[i] = ComputePEP(eap[i], eap[min_index]);
+    }
+  }
+  return pep;
+}
+
+void WritePerformanceData(const std::vector<Model>& models, const std::vector<double>& eap, const std::vector<double>& eac, const std::vector<double>& pep) {
+  std::ofstream performance_file("./Data/performance.dat");
+  performance_file << std::fixed << std::setprecision(15);
+  performance_file << "Model\tIEAP\tIEAC\tPEP\n";
+  for (size_t i = 0; i < models.size(); ++i) {
+    performance_file << models[i].Name() << '\t' << eap[i] << '\t'
+      << eac[i] << '\t' << pep[i] << '\n';
+  }
+}
+
+void ProcessData(std::string_view input_file, std::string_view output_file, const std::vector<Model>& models) {
+  std::ifstream data_file(input_file.data());
+  if (!data_file) return;
+
+  std::ofstream out_file(output_file.data());
+  if (!out_file) return;
+
+  double t = 0.0, y_plant = 0.0;
+  std::vector<double> eap(models.size(), 0.0);
+  std::vector<double> eac(models.size(), 0.0);
+
+  while (data_file >> t >> y_plant) {
+    auto outputs = CalculateErrorMetrics(models, t, y_plant, eap, eac);
+    WriteErrorData(out_file, t, eap);
+  }
+
+  int min_index = FindMinErrorIndex(eap);
+  auto pep = ComputePEPForAll(eap, min_index);
+  WritePerformanceData(models, eap, eac, pep);
+}
+
+int main() {
+  constexpr std::string_view input_file = "./Data/electric-10.dat";
+  constexpr std::string_view output_file = "./Data/error.dat";
+  constexpr std::string_view parameters_file = "./Data/parameters.dat";
+
+  constexpr double amplitude = 110.0, initial_time = 170.0, offset = 20.0;
+
+  std::vector<Model> models = {
+    {kAmplitude, kOnTime, kKpF1, kTpF1, 0.0, kTdF1, kOffset, "Hf1"},
+    {kAmplitude, kOnTime, kKpF2, kTpF2, 0.0, kTdF2, kOffset, "Hf2"},
+    {kAmplitude, kOnTime, kKpFM, kTpFM, 0.0, kTdFM, kOffset, "Mf"},
+    {kAmplitude, kOnTime, kKpS1, kTp1S1, kTp2S1, kTdS1, kOffset, "Hs1", true},
+    {kAmplitude, kOnTime, kKpS2, kTp1S2, kTp2S2, kTdS2, kOffset, "Hs2", true},
+    {kAmplitude, kOnTime, kKpSM, kTp1SM, kTp2SM, kTdSM, kOffset, "Ms", true},
+  };
+
+  WriteModelParameters(parameters_file, models);
+  ProcessData(input_file, output_file, models);
+
+  return 0;
+}
+
+
+```
+
+## Python: 4-DOF Wan–Schimmels State-Space Biomechanical Vibration Model (wan.py)
+
+```python
+import numpy as np
+from scipy.integrate import solve_ivp
+import pandas as pd
+from scipy.stats import norm
+
+# Parameters (tunable)
+m1, m2, m3, m4 = 36, 5.5, 15, 4.17
+c1, c2, c3, c4 = 2475, 330, 200, 250  # damping constants
+k1, k2, k3, k4 = 49340, 20000, 10000, 134400  # spring constants
+c31, k31 = 909.1, 192000
+
+# Step function input
+def step_function(t):
+    return 0.01 if (t >= 1) else 0.0  # Step function (x_s)
+
+def derivative_of_step_function(t, amplitude=0.01, start_time=1):
+    # A numerical approximation of the Dirac delta is a very sharp spike at t = start_time
+    epsilon = 1e-5  # Small value to simulate a spike
+    return amplitude * norm.pdf(t, loc=start_time, scale=epsilon)
+
+# Define the system of equations
+def system(t, y):
+    x1, v1, x2, v2, x3, v3, x4, v4 = y
+
+    dx1_dt = v1
+    dx2_dt = v2
+    dx3_dt = v3
+    dx4_dt = v4
+    
+    dv1_dt = (-c2 * (v1 - v2) - k2 * (x1 - x2) - c31 * (v1 - v2) + k31 * (x1 - x3) + c1 * (derivative_of_step_function(t) - v1) + k1 * (step_function(t) - x1)) / m1
+    dv2_dt = (c2 * (v1 - v2) + k2 * (x1 - x2) - c3 * (v2 - v3) - k3 * (x2 - x3)) / m2
+    dv3_dt = (c3 * (v2 - v3) + k3 * (x2 - x3) + c31 * (v1 - v3) + k31 * (x1 - x3) - c4 * (v3 - v4) - k4 * (x3 - x4)) / m3
+    dv4_dt = (c4 * (v3 - v4) + k4 * (x3 - x4)) / m4
+
+    return [dx1_dt, dv1_dt, dx2_dt, dv2_dt, dx3_dt, dv3_dt, dx4_dt, dv4_dt]
+
+# Initial conditions: x1, v1, x2, v2, x3, v3, x4, v4
+initial_conditions = [0, 0, 0, 0, 0, 0, 0, 0]  # Initial positions and velocities
+
+# Time span for the integration
+t_span = (0, 10)  # from 0 to 10 seconds
+t_eval = np.linspace(0, 10, 1000)  # time points to evaluate the solution
+
+# Solve the system
+solution = solve_ivp(system, t_span, initial_conditions, t_eval=t_eval)
+
+# Extract the results
+x1, v1, x2, v2, x3, v3, x4, v4 = solution.y[0], solution.y[1], solution.y[2], solution.y[3], solution.y[4], solution.y[5], solution.y[6], solution.y[7]
+a1 = np.gradient(v1, solution.t)  # Acceleration is the derivative of velocity
+a2 = np.gradient(v2, solution.t)
+a3 = np.gradient(v3, solution.t)
+a4 = np.gradient(v4, solution.t)
+
+# Create a DataFrame to store the results
+df = pd.DataFrame({
+    '#Time': solution.t,
+    'x1': x1,
+    'v1': v1,
+    'a1': a1,
+    'x2': x2,
+    'v2': v2,
+    'a2': a2,
+    'x3': x3,
+    'v3': v3,
+    'a3': a3,
+    'x4': x4,
+    'v4': v4,
+    'a4': a4
+})
+
+# Save the results to a CSV file
+df.to_csv('system_solution_with_velocities_and_accelerations.csv', index=False, sep='\t')
+
+
+```

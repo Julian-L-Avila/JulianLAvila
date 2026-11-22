@@ -4,7 +4,7 @@
 #  Contiene definiciones de constantes físicas, matrices de Pauli y clases
 #  principales para construir mallas, estados iniciales y ejecutar simulaciones.
 #
-#  @author Sebastian Rodriguez, Camilo Huertas, Julian Avila
+#  @author Sebastian Rodriguez, Camilo Huertas, Julian L. Avila-Martinez
 #  @date 2025-09-11
 
 import numpy as np

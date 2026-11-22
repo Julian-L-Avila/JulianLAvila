@@ -1,0 +1,16 @@
+---
+title: "Chaotic Double Pendulum: Symbolic Euler–Lagrange & Numerical Integration in Julia"
+subtitle: "Lagrangian Mechanics, Coupled Nonlinear Equations of Motion, and Phase-Space Sensitivity"
+author: "Julian L. Avila-Martinez"
+categories: ["Analytical Mechanics & Scientific Computing"]
+format:
+  html:
+    toc: true
+    code-copy: true
+---
+
+*Lagrangian Mechanics, Coupled Nonlinear Equations of Motion, and Phase-Space Sensitivity*
+
+## Double Pendulum Simulation in Julia (Double-Pendulum-Julia.ipynb)
+
+Source notebook: [`projects/02-computational-physics-and-software/ode-solvers-and-simulations/Double-Pendulum-Julia.ipynb`](../projects/02-computational-physics-and-software/ode-solvers-and-simulations/Double-Pendulum-Julia.ipynb)

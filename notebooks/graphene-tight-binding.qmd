@@ -1,0 +1,16 @@
+---
+title: "Graphene Tight-Binding Dispersion & Massless Dirac Cones"
+subtitle: "Nearest-Neighbor Electronic Band Structure on the Honeycomb Lattice and K/K' Valley Linearization"
+author: "Julian L. Avila-Martinez"
+categories: ["Condensed Matter & Computational Physics"]
+format:
+  html:
+    toc: true
+    code-copy: true
+---
+
+*Nearest-Neighbor Electronic Band Structure on the Honeycomb Lattice and K/K' Valley Linearization*
+
+## Graphene Tight-Binding & Brillouin Zone Dirac Cones (graphene.sync.ipynb)
+
+Source notebook: [`projects/02-computational-physics-and-software/numerov-quantum-and-graphene/graphene.sync.ipynb`](../projects/02-computational-physics-and-software/numerov-quantum-and-graphene/graphene.sync.ipynb)

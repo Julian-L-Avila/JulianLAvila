@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2D Poisson Equation via the Galerkin Finite Element Method (FEM) | Julian L. Avila-Martinez — Quarto Computing Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <style>
+    pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.code-highlight .hll { background-color: #ffffcc }
+.code-highlight { background: #f8f8f8; }
+.code-highlight .c { color: #3D7B7B; font-style: italic } /* Comment */
+.code-highlight .err { border: 1px solid #FF0000 } /* Error */
+.code-highlight .k { color: #008000; font-weight: bold } /* Keyword */
+.code-highlight .o { color: #666666 } /* Operator */
+.code-highlight .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.code-highlight .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.code-highlight .cp { color: #9C6500 } /* Comment.Preproc */
+.code-highlight .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.code-highlight .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.code-highlight .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.code-highlight .gd { color: #A00000 } /* Generic.Deleted */
+.code-highlight .ge { font-style: italic } /* Generic.Emph */
+.code-highlight .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.code-highlight .gr { color: #E40000 } /* Generic.Error */
+.code-highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.code-highlight .gi { color: #008400 } /* Generic.Inserted */
+.code-highlight .go { color: #717171 } /* Generic.Output */
+.code-highlight .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.code-highlight .gs { font-weight: bold } /* Generic.Strong */
+.code-highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.code-highlight .gt { color: #0044DD } /* Generic.Traceback */
+.code-highlight .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.code-highlight .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.code-highlight .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.code-highlight .kp { color: #008000 } /* Keyword.Pseudo */
+.code-highlight .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.code-highlight .kt { color: #B00040 } /* Keyword.Type */
+.code-highlight .m { color: #666666 } /* Literal.Number */
+.code-highlight .s { color: #BA2121 } /* Literal.String */
+.code-highlight .na { color: #687822 } /* Name.Attribute */
+.code-highlight .nb { color: #008000 } /* Name.Builtin */
+.code-highlight .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.code-highlight .no { color: #880000 } /* Name.Constant */
+.code-highlight .nd { color: #AA22FF } /* Name.Decorator */
+.code-highlight .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.code-highlight .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.code-highlight .nf { color: #0000FF } /* Name.Function */
+.code-highlight .nl { color: #767600 } /* Name.Label */
+.code-highlight .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.code-highlight .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.code-highlight .nv { color: #19177C } /* Name.Variable */
+.code-highlight .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.code-highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.code-highlight .mb { color: #666666 } /* Literal.Number.Bin */
+.code-highlight .mf { color: #666666 } /* Literal.Number.Float */
+.code-highlight .mh { color: #666666 } /* Literal.Number.Hex */
+.code-highlight .mi { color: #666666 } /* Literal.Number.Integer */
+.code-highlight .mo { color: #666666 } /* Literal.Number.Oct */
+.code-highlight .sa { color: #BA2121 } /* Literal.String.Affix */
+.code-highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
+.code-highlight .sc { color: #BA2121 } /* Literal.String.Char */
+.code-highlight .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.code-highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.code-highlight .s2 { color: #BA2121 } /* Literal.String.Double */
+.code-highlight .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.code-highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.code-highlight .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.code-highlight .sx { color: #008000 } /* Literal.String.Other */
+.code-highlight .sr { color: #A45A77 } /* Literal.String.Regex */
+.code-highlight .s1 { color: #BA2121 } /* Literal.String.Single */
+.code-highlight .ss { color: #19177C } /* Literal.String.Symbol */
+.code-highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.code-highlight .fm { color: #0000FF } /* Name.Function.Magic */
+.code-highlight .vc { color: #19177C } /* Name.Variable.Class */
+.code-highlight .vg { color: #19177C } /* Name.Variable.Global */
+.code-highlight .vi { color: #19177C } /* Name.Variable.Instance */
+.code-highlight .vm { color: #19177C } /* Name.Variable.Magic */
+.code-highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
+    .quarto-doc-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 2.2rem;
+      padding: 2.5rem 0 4rem;
+      align-items: start;
+    }
+    @media (max-width: 960px) {
+      .quarto-doc-layout { grid-template-columns: 1fr; }
+    }
+    .quarto-sidebar {
+      position: sticky;
+      top: 84px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      font-size: 0.85rem;
+    }
+    .quarto-sidebar h4 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    .quarto-sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .quarto-sidebar a {
+      color: var(--text-secondary);
+      display: block;
+      padding: 0.3rem 0.5rem;
+      border-radius: 5px;
+      transition: var(--transition);
+    }
+    .quarto-sidebar a:hover, .quarto-sidebar a.active {
+      color: var(--accent);
+      background: var(--accent-soft);
+      font-weight: 600;
+    }
+    .quarto-main {
+      min-width: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.2rem 2.4rem;
+      box-shadow: var(--shadow);
+    }
+    .quarto-title-banner {
+      background: linear-gradient(135deg, #58187C 0%, #2D0C40 100%);
+      color: #FFFFFF;
+      padding: 2.4rem 0 2rem;
+      border-bottom: 4px solid #00A896;
+    }
+    .quarto-title-banner .cat-pill {
+      display: inline-block;
+      background: rgba(0, 168, 150, 0.25);
+      border: 1px solid #00A896;
+      color: #7CE8DC;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+    .quarto-title-banner h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.6rem, 3vw, 2.3rem);
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+      color: #FFFFFF;
+    }
+    .quarto-title-banner p {
+      color: #E2D6EC;
+      font-size: 1rem;
+      max-width: 820px;
+    }
+    .quarto-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      margin-top: 1.1rem;
+      font-size: 0.83rem;
+      color: #D4C3E3;
+    }
+    .quarto-section-box {
+      margin-bottom: 2.8rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .quarto-section-box:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .quarto-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid var(--accent);
+    }
+    .quarto-section-header h2 {
+      font-size: 1.25rem;
+      color: var(--accent);
+      margin: 0;
+    }
+    .quarto-md-cell {
+      margin: 1.1rem 0;
+      line-height: 1.7;
+      color: var(--text-primary);
+    }
+    .quarto-md-cell h1, .quarto-md-cell h2, .quarto-md-cell h3 {
+      color: var(--accent);
+      margin-top: 1.4rem;
+      margin-bottom: 0.6rem;
+    }
+    .quarto-code-cell {
+      margin: 1.15rem 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #F8F9FB;
+    }
+    [data-theme="dark"] .quarto-code-cell {
+      background: #170F22;
+    }
+    .code-cell-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.35rem 0.85rem;
+      background: var(--accent-soft);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .code-highlight pre {
+      margin: 0;
+      padding: 0.95rem 1.1rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      background: transparent !important;
+    }
+    .quarto-cell-outputs {
+      border-top: 1px solid var(--border);
+      padding: 0.9rem 1.1rem;
+      background: var(--bg-primary);
+    }
+    .cell-stream, .cell-text-out {
+      margin: 0.3rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      color: var(--text-secondary);
+    }
+    .cell-error-out {
+      margin: 0.3rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      white-space: pre-wrap;
+      color: #b91c1c;
+    }
+    .cell-figure {
+      margin: 0.65rem 0;
+      text-align: center;
+    }
+    .cell-figure img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #FFFFFF;
+      padding: 6px;
+    }
+  </style>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-inner">
+      <a href="../index.html" class="brand">
+        <span class="brand-badge">Cl<sub>1,3</sub></span>
+        <span>Julian L. Avila-Martinez</span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html">← Back to Portfolio</a>
+        <a href="index.html">Quarto Notebooks &amp; Code Index</a>
+        <a href="../index.html#projects">All Projects</a>
+        <a href="../cv/cv-julian-l-avila.pdf" target="_blank">CV (PDF)</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="quarto-title-banner">
+    <div class="container">
+      <span class="cat-pill">Numerical PDEs &amp; Scientific Computing · Python · NumPy · SciPy</span>
+      <h1>2D Poisson Equation via the Galerkin Finite Element Method (FEM)</h1>
+      <p>Weak Variational Formulation, Triangular Mesh Stiffness Assembly &amp; Boundary Value Solutions</p>
+      <div class="quarto-meta-row">
+        <span><strong>Author:</strong> Julian L. Avila-Martinez</span>
+        <span><strong>Affiliation:</strong> Universidad Distrital Francisco José de Caldas</span>
+        <span><strong>Format:</strong> Quarto Published Notebook &amp; Code</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="container quarto-doc-layout">
+    <aside class="quarto-sidebar">
+      <h4>Quarto Computing Showcase</h4>
+      <ul>
+        <li><a href="index.html" class="">📚 All Notebooks &amp; Code</a></li>
+<li><a href="dirac-physics-verification.html" class="">Dirac-Solver: Relativistic (3+1)D Physics Verification & C++17/Python Core</a></li>
+<li><a href="dirac-1d-and-yukawa.html" class="">Dirac-Solver: 1D Relativistic Wavepackets & 2D Yukawa Potential Simulations</a></li>
+<li><a href="numerov-quantum-potentials.html" class="">O(h⁶) Numerov Quantum Bound-State Solver for 1D Potentials</a></li>
+<li><a href="graphene-tight-binding.html" class="">Graphene Tight-Binding Dispersion & Massless Dirac Cones</a></li>
+<li><a href="pinn-damped-oscillator.html" class="">Physics-Informed Neural Networks (PINNs) for Differential Equations</a></li>
+<li><a href="poisson-finite-elements.html" class="active">2D Poisson Equation via the Galerkin Finite Element Method (FEM)</a></li>
+<li><a href="lhc-particle-classification.html" class="">LHC High-Energy Particle Collision Classification Across 11 ML Architectures</a></li>
+<li><a href="adaptive-rk45-and-nonlinear-odes.html" class="">Adaptive Dormand–Prince RK45 & Nonlinear Anharmonic Oscillators</a></li>
+<li><a href="double-pendulum-julia.html" class="">Chaotic Double Pendulum: Symbolic Euler–Lagrange & Numerical Integration in Julia</a></li>
+<li><a href="coupled-pendulums-fft.html" class="">Normal Modes of Three Coupled Pendulums & Experimental FFT Validation</a></li>
+<li><a href="braun-tube-em-ratio.html" class="">Electron Charge-to-Mass Ratio (e/m) Metrology & Uncertainty Propagation</a></li>
+<li><a href="hpc-multilanguage-code-showcase.html" class="">Multi-Language Scientific Computing & HPC Code Showcase (Fortran 90, C, C++17, Python)</a></li>
+      </ul>
+    </aside>
+    <main class="quarto-main">
+      
+        <section class="quarto-section-box">
+          <div class="quarto-section-header">
+            <h2>📓 2D Galerkin Finite Element Method Solver (poisson-finite-elements.ipynb)</h2>
+            <a href="../projects/02-computational-physics-and-software/ode-solvers-and-simulations/poisson-finite-elements.ipynb" class="file-link nb" download>⬇ Download Raw .ipynb</a>
+          </div>
+          <div class="quarto-code-cell">
+  <div class="code-cell-header"><span class="code-prompt">In [1]:</span><span class="code-lang">PYTHON</span></div>
+  <div class="code-highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Solves Poisson&#39;s and Laplace&#39;s equations using the Finite Element Method (FEniCSx).</span>
+
+<span class="sd">This script demonstrates how to solve two PDE problems:</span>
+<span class="sd">1. Poisson&#39;s equation on an L-shaped domain.</span>
+<span class="sd">2. Laplace&#39;s equation on an annular domain.</span>
+
+<span class="sd">This script is a standalone Python version of the corresponding Jupyter Notebook.</span>
+
+<span class="sd">Required Libraries:</span>
+<span class="sd">- fenics-dolfinx</span>
+<span class="sd">- mpi4py</span>
+<span class="sd">- petsc4py</span>
+<span class="sd">- ufl</span>
+<span class="sd">- gmsh</span>
+<span class="sd">- pyvista</span>
+<span class="sd">- matplotlib</span>
+<span class="sd">- numpy</span>
+
+<span class="sd">You can typically install these with pip:</span>
+<span class="sd">pip install fenics-dolfinx[gmsh] mpi4py petsc4py ufl pyvista matplotlib numpy</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">fenics</span><span class="o">-</span><span class="n">dolfinx</span><span class="p">[</span><span class="n">gmsh</span><span class="p">]</span> <span class="n">mpi4py</span> <span class="n">petsc4py</span> <span class="n">ufl</span> <span class="n">pyvista</span> <span class="n">matplotlib</span> <span class="n">numpy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">dolfinx</span> <span class="kn">import</span> <span class="n">fem</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">plot</span><span class="p">,</span> <span class="n">io</span>
+    <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+    <span class="kn">from</span> <span class="nn">petsc4py.PETSc</span> <span class="kn">import</span> <span class="n">ScalarType</span>
+    <span class="kn">import</span> <span class="nn">ufl</span>
+    <span class="kn">import</span> <span class="nn">gmsh</span>
+    <span class="kn">from</span> <span class="nn">dolfinx.io</span> <span class="kn">import</span> <span class="n">gmshio</span>
+    <span class="kn">import</span> <span class="nn">pyvista</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All required libraries imported successfully.&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error importing a required library: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Please ensure all dependencies are installed correctly.&quot;</span><span class="p">)</span>
+    <span class="n">exit</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">create_l_shape_mesh</span><span class="p">(</span><span class="n">mpi_comm</span><span class="p">,</span> <span class="n">refinement</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates an L-shaped mesh using gmsh.&quot;&quot;&quot;</span>
+    <span class="n">gmsh</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;l_shape&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Points for the L-shape</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addPoint</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">meshSize</span><span class="o">=</span><span class="n">refinement</span><span class="p">)</span>
+        <span class="n">p2</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addPoint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">meshSize</span><span class="o">=</span><span class="n">refinement</span><span class="p">)</span>
+        <span class="n">p3</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addPoint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">meshSize</span><span class="o">=</span><span class="n">refinement</span><span class="p">)</span>
+        <span class="n">p4</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addPoint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">meshSize</span><span class="o">=</span><span class="n">refinement</span><span class="p">)</span> <span class="c1"># Re-entrant corner</span>
+        <span class="n">p5</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addPoint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">meshSize</span><span class="o">=</span><span class="n">refinement</span><span class="p">)</span>
+        <span class="n">p6</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addPoint</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">meshSize</span><span class="o">=</span><span class="n">refinement</span><span class="p">)</span>
+
+        <span class="c1"># Lines</span>
+        <span class="n">l1</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addLine</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+        <span class="n">l2</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addLine</span><span class="p">(</span><span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">)</span>
+        <span class="n">l3</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addLine</span><span class="p">(</span><span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">)</span>
+        <span class="n">l4</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addLine</span><span class="p">(</span><span class="n">p4</span><span class="p">,</span> <span class="n">p5</span><span class="p">)</span>
+        <span class="n">l5</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addLine</span><span class="p">(</span><span class="n">p5</span><span class="p">,</span> <span class="n">p6</span><span class="p">)</span>
+        <span class="n">l6</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addLine</span><span class="p">(</span><span class="n">p6</span><span class="p">,</span> <span class="n">p1</span><span class="p">)</span>
+
+        <span class="c1"># Curve loop and surface</span>
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addCurveLoop</span><span class="p">([</span><span class="n">l1</span><span class="p">,</span> <span class="n">l2</span><span class="p">,</span> <span class="n">l3</span><span class="p">,</span> <span class="n">l4</span><span class="p">,</span> <span class="n">l5</span><span class="p">,</span> <span class="n">l6</span><span class="p">])</span>
+        <span class="n">surface</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addPlaneSurface</span><span class="p">([</span><span class="n">loop</span><span class="p">])</span>
+
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># Generate 2D mesh</span>
+
+    <span class="c1"># Convert gmsh to dolfinx mesh</span>
+    <span class="n">domain</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gmshio</span><span class="o">.</span><span class="n">model_to_mesh</span><span class="p">(</span><span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">mpi_comm</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">gmsh</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">domain</span>
+
+<span class="k">def</span> <span class="nf">solve_l_shape_problem</span><span class="p">(</span><span class="n">mpi_comm</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets up and solves the Poisson problem on the L-shaped domain.&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Solving Problem 1: Poisson Equation on L-shaped Domain ---&quot;</span><span class="p">)</span>
+
+    <span class="c1"># 1. Create Mesh</span>
+    <span class="n">domain</span> <span class="o">=</span> <span class="n">create_l_shape_mesh</span><span class="p">(</span><span class="n">mpi_comm</span><span class="p">,</span> <span class="n">refinement</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+
+    <span class="c1"># 2. Define Function Space</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Lagrange&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="c1"># P1 elements</span>
+
+    <span class="c1"># 3. Define Analytical Solution and Forcing Function</span>
+    <span class="n">u_D_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="n">f_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="p">(</span><span class="mf">5.0</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+
+    <span class="n">u_D</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">u_D</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">u_D_func</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">f_func</span><span class="p">)</span>
+
+    <span class="c1"># 4. Define Boundary Conditions</span>
+    <span class="n">boundary_facets</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">exterior_facet_indices</span><span class="p">(</span><span class="n">domain</span><span class="o">.</span><span class="n">topology</span><span class="p">)</span>
+    <span class="n">boundary_dofs</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">locate_dofs_topological</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">domain</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">dim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">boundary_facets</span><span class="p">)</span>
+    <span class="n">bc</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">dirichletbc</span><span class="p">(</span><span class="n">u_D</span><span class="p">,</span> <span class="n">boundary_dofs</span><span class="p">)</span>
+
+    <span class="c1"># 5. Define Variational Problem</span>
+    <span class="n">u_trial</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">TrialFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">v_test</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">TestFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ufl</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">u_trial</span><span class="p">),</span> <span class="n">ufl</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">v_test</span><span class="p">))</span> <span class="o">*</span> <span class="n">ufl</span><span class="o">.</span><span class="n">dx</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="n">v_test</span> <span class="o">*</span> <span class="n">ufl</span><span class="o">.</span><span class="n">dx</span>
+
+    <span class="c1"># 6. Solve the linear system</span>
+    <span class="n">problem</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">petsc</span><span class="o">.</span><span class="n">LinearProblem</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">bcs</span><span class="o">=</span><span class="p">[</span><span class="n">bc</span><span class="p">],</span> <span class="n">petsc_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;ksp_type&quot;</span><span class="p">:</span> <span class="s2">&quot;preonly&quot;</span><span class="p">,</span> <span class="s2">&quot;pc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;lu&quot;</span><span class="p">})</span>
+    <span class="n">uh</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+    <span class="n">uh</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;u_h&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Solved Poisson equation for L-shaped domain.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># 7. Post-processing and Visualization</span>
+    <span class="k">if</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">u_plotter</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">Plotter</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">window_size</span><span class="o">=</span><span class="p">[</span><span class="mi">1800</span><span class="p">,</span> <span class="mi">600</span><span class="p">],</span> <span class="n">off_screen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">topology</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">create_vtk_mesh</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+
+            <span class="c1"># Subplot 1: FEM Solution</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">grid_sol</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">UnstructuredGrid</span><span class="p">(</span><span class="n">topology</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">geometry</span><span class="p">)</span>
+            <span class="n">grid_sol</span><span class="o">.</span><span class="n">point_data</span><span class="p">[</span><span class="n">uh</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">uh</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">real</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">grid_sol</span><span class="p">,</span> <span class="n">show_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">add_text</span><span class="p">(</span><span class="s2">&quot;FEM Solution $u_h$&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;upper_edge&#39;</span><span class="p">,</span> <span class="n">font_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">view_xy</span><span class="p">()</span>
+
+            <span class="c1"># Subplot 2: Analytical Solution</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">u_analytical_on_mesh</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+            <span class="n">u_analytical_on_mesh</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">u_D_func</span><span class="p">)</span>
+            <span class="n">grid_analytical</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">UnstructuredGrid</span><span class="p">(</span><span class="n">topology</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">geometry</span><span class="p">)</span>
+            <span class="n">grid_analytical</span><span class="o">.</span><span class="n">point_data</span><span class="p">[</span><span class="s2">&quot;Analytical u_D&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">u_analytical_on_mesh</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">real</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">grid_analytical</span><span class="p">,</span> <span class="n">show_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">add_text</span><span class="p">(</span><span class="s2">&quot;Analytical Solution $u_D$&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;upper_edge&#39;</span><span class="p">,</span> <span class="n">font_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">view_xy</span><span class="p">()</span>
+
+            <span class="c1"># Subplot 3: Error</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">error_viz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u_analytical_on_mesh</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">array</span> <span class="o">-</span> <span class="n">uh</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+            <span class="n">grid_error</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">UnstructuredGrid</span><span class="p">(</span><span class="n">topology</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">geometry</span><span class="p">)</span>
+            <span class="n">grid_error</span><span class="o">.</span><span class="n">point_data</span><span class="p">[</span><span class="s2">&quot;Absolute Error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">error_viz</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">grid_error</span><span class="p">,</span> <span class="n">show_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span><span class="p">)</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">add_text</span><span class="p">(</span><span class="s2">&quot;Absolute Error&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;upper_edge&#39;</span><span class="p">,</span> <span class="n">font_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">view_xy</span><span class="p">()</span>
+
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">link_views</span><span class="p">()</span>
+            <span class="n">u_plotter</span><span class="o">.</span><span class="n">screenshot</span><span class="p">(</span><span class="s2">&quot;l_shape_solution_comparison.png&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;L-shape solution comparison plot saved to l_shape_solution_comparison.png&quot;</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred during PyVista plotting for L-shape: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. Skipping plot.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># 8. Calculate L2 error</span>
+    <span class="n">L2_error_form</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">form</span><span class="p">(</span><span class="n">ufl</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">uh</span> <span class="o">-</span> <span class="n">u_D</span><span class="p">,</span> <span class="n">uh</span> <span class="o">-</span> <span class="n">u_D</span><span class="p">)</span> <span class="o">*</span> <span class="n">ufl</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
+    <span class="n">error_local</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">assemble_scalar</span><span class="p">(</span><span class="n">L2_error_form</span><span class="p">)</span>
+    <span class="n">error_global</span> <span class="o">=</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">allreduce</span><span class="p">(</span><span class="n">error_local</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+
+    <span class="n">norm_u_D_form</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">form</span><span class="p">(</span><span class="n">ufl</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">u_D</span><span class="p">,</span> <span class="n">u_D</span><span class="p">)</span> <span class="o">*</span> <span class="n">ufl</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
+    <span class="n">norm_u_D_local</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">assemble_scalar</span><span class="p">(</span><span class="n">norm_u_D_form</span><span class="p">)</span>
+    <span class="n">norm_u_D_global</span> <span class="o">=</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">allreduce</span><span class="p">(</span><span class="n">norm_u_D_local</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">norm_u_D_global</span> <span class="o">&gt;</span> <span class="mf">1e-12</span><span class="p">:</span>
+        <span class="n">relative_L2_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">error_global</span> <span class="o">/</span> <span class="n">norm_u_D_global</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Relative L2 error for L-shape: </span><span class="si">{</span><span class="n">relative_L2_error</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">create_annulus_mesh</span><span class="p">(</span><span class="n">mpi_comm</span><span class="p">,</span> <span class="n">r_inner</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">r_outer</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">refinement</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates an annulus mesh using gmsh.&quot;&quot;&quot;</span>
+    <span class="n">gmsh</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;annulus&quot;</span><span class="p">)</span>
+        <span class="n">outer_circle</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addCircle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">r_outer</span><span class="p">)</span>
+        <span class="n">outer_loop</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addCurveLoop</span><span class="p">([</span><span class="n">outer_circle</span><span class="p">])</span>
+        <span class="n">inner_circle</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addCircle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">r_inner</span><span class="p">)</span>
+        <span class="n">inner_loop</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addCurveLoop</span><span class="p">([</span><span class="n">inner_circle</span><span class="p">])</span>
+        <span class="n">surface</span> <span class="o">=</span> <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">addPlaneSurface</span><span class="p">([</span><span class="n">outer_loop</span><span class="p">,</span> <span class="n">inner_loop</span><span class="p">])</span>
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">setNumber</span><span class="p">(</span><span class="s2">&quot;Mesh.MeshSizeFactor&quot;</span><span class="p">,</span> <span class="n">refinement</span><span class="p">)</span>
+        <span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">domain</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gmshio</span><span class="o">.</span><span class="n">model_to_mesh</span><span class="p">(</span><span class="n">gmsh</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">mpi_comm</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">gmsh</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">domain</span>
+
+<span class="k">def</span> <span class="nf">solve_annulus_problem</span><span class="p">(</span><span class="n">mpi_comm</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets up and solves the Laplace problem on the annulus domain.&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Solving Problem 2: Laplace Equation on Annulus Domain ---&quot;</span><span class="p">)</span>
+
+    <span class="c1"># 1. Create Mesh</span>
+    <span class="n">domain</span> <span class="o">=</span> <span class="n">create_annulus_mesh</span><span class="p">(</span><span class="n">mpi_comm</span><span class="p">,</span> <span class="n">r_inner</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">r_outer</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">refinement</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+    <span class="c1"># 2. Define Function Space</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Lagrange&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="c1"># P2 elements</span>
+
+    <span class="c1"># 3. Define Analytical Solution</span>
+    <span class="k">def</span> <span class="nf">u_D_annulus_cartesian</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">r_safe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">r</span> <span class="o">&gt;</span> <span class="mf">1e-9</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mf">1e-9</span><span class="p">)</span>
+        <span class="n">sin_theta</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">r_safe</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mf">9.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">8.0</span> <span class="o">*</span> <span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="n">r</span> <span class="o">/</span> <span class="mf">8.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin_theta</span>
+
+    <span class="n">u_D</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">u_D</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">u_D_annulus_cartesian</span><span class="p">)</span>
+    <span class="n">u_D</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;u_D_annulus&quot;</span>
+
+    <span class="c1"># 4. Define Boundary Conditions</span>
+    <span class="n">inner_boundary</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">outer_boundary</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="mf">3.0</span><span class="p">)</span>
+
+    <span class="n">u_inner_bc_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># y-coordinate for sin(theta) on r=1</span>
+    <span class="n">u_outer_bc_val</span> <span class="o">=</span> <span class="n">ScalarType</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="n">inner_facets</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">locate_entities_boundary</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="n">domain</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">dim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">inner_boundary</span><span class="p">)</span>
+    <span class="n">inner_dofs</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">locate_dofs_topological</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">domain</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">dim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">inner_facets</span><span class="p">)</span>
+    <span class="n">u_inner_expr</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">u_inner_expr</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">u_inner_bc_func</span><span class="p">)</span>
+    <span class="n">bc_inner</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">dirichletbc</span><span class="p">(</span><span class="n">u_inner_expr</span><span class="p">,</span> <span class="n">inner_dofs</span><span class="p">)</span>
+
+    <span class="n">outer_facets</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">locate_entities_boundary</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="n">domain</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">dim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">outer_boundary</span><span class="p">)</span>
+    <span class="n">outer_dofs</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">locate_dofs_topological</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">domain</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">dim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">outer_facets</span><span class="p">)</span>
+    <span class="n">bc_outer</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">dirichletbc</span><span class="p">(</span><span class="n">u_outer_bc_val</span><span class="p">,</span> <span class="n">outer_dofs</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+
+    <span class="n">bcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">bc_inner</span><span class="p">,</span> <span class="n">bc_outer</span><span class="p">]</span>
+
+    <span class="c1"># 5. Define Variational Problem</span>
+    <span class="n">u_trial</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">TrialFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">v_test</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">TestFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ufl</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">u_trial</span><span class="p">),</span> <span class="n">ufl</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">v_test</span><span class="p">))</span> <span class="o">*</span> <span class="n">ufl</span><span class="o">.</span><span class="n">dx</span>
+    <span class="n">f_placeholder</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="n">ScalarType</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">f_placeholder</span> <span class="o">*</span> <span class="n">v_test</span> <span class="o">*</span> <span class="n">ufl</span><span class="o">.</span><span class="n">dx</span>
+
+    <span class="c1"># 6. Solve the linear system</span>
+    <span class="n">problem</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">petsc</span><span class="o">.</span><span class="n">LinearProblem</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">bcs</span><span class="o">=</span><span class="n">bcs</span><span class="p">,</span> <span class="n">petsc_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;ksp_type&quot;</span><span class="p">:</span> <span class="s2">&quot;preonly&quot;</span><span class="p">,</span> <span class="s2">&quot;pc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;lu&quot;</span><span class="p">})</span>
+    <span class="n">uh</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+    <span class="n">uh</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;u_h_annulus&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Solved Laplace equation for annular domain.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># 7. Post-processing and Visualization</span>
+    <span class="k">if</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">plotter</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">Plotter</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">window_size</span><span class="o">=</span><span class="p">[</span><span class="mi">1800</span><span class="p">,</span> <span class="mi">600</span><span class="p">],</span> <span class="n">off_screen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">topology</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">create_vtk_mesh</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+
+            <span class="c1"># Subplot 1: FEM Solution</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">grid_sol</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">UnstructuredGrid</span><span class="p">(</span><span class="n">topology</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">geometry</span><span class="p">)</span>
+            <span class="n">grid_sol</span><span class="o">.</span><span class="n">point_data</span><span class="p">[</span><span class="n">uh</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">uh</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">real</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">grid_sol</span><span class="p">,</span> <span class="n">show_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">add_text</span><span class="p">(</span><span class="s2">&quot;FEM Solution $u_h$&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;upper_edge&#39;</span><span class="p">,</span> <span class="n">font_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">view_xy</span><span class="p">()</span>
+
+            <span class="c1"># Subplot 2: Analytical Solution</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">u_analytical_mesh</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+            <span class="n">u_analytical_mesh</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">u_D_annulus_cartesian</span><span class="p">)</span>
+            <span class="n">grid_analytical</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">UnstructuredGrid</span><span class="p">(</span><span class="n">topology</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">geometry</span><span class="p">)</span>
+            <span class="n">grid_analytical</span><span class="o">.</span><span class="n">point_data</span><span class="p">[</span><span class="n">u_D</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">u_analytical_mesh</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">real</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">grid_analytical</span><span class="p">,</span> <span class="n">show_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">add_text</span><span class="p">(</span><span class="s2">&quot;Analytical Solution $u_D$&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;upper_edge&#39;</span><span class="p">,</span> <span class="n">font_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">view_xy</span><span class="p">()</span>
+
+            <span class="c1"># Subplot 3: Error</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">error_viz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u_analytical_mesh</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">array</span> <span class="o">-</span> <span class="n">uh</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+            <span class="n">grid_error</span> <span class="o">=</span> <span class="n">pyvista</span><span class="o">.</span><span class="n">UnstructuredGrid</span><span class="p">(</span><span class="n">topology</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">geometry</span><span class="p">)</span>
+            <span class="n">grid_error</span><span class="o">.</span><span class="n">point_data</span><span class="p">[</span><span class="s2">&quot;Absolute Error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">error_viz</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">grid_error</span><span class="p">,</span> <span class="n">show_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span><span class="p">)</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">add_text</span><span class="p">(</span><span class="s2">&quot;Absolute Error&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;upper_edge&#39;</span><span class="p">,</span> <span class="n">font_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">view_xy</span><span class="p">()</span>
+
+            <span class="n">plotter</span><span class="o">.</span><span class="n">link_views</span><span class="p">()</span>
+            <span class="n">plotter</span><span class="o">.</span><span class="n">screenshot</span><span class="p">(</span><span class="s2">&quot;annulus_solution_comparison.png&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Annulus solution comparison plot saved to annulus_solution_comparison.png&quot;</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred during PyVista plotting for annulus: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. Skipping.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># 8. Calculate L2 error</span>
+    <span class="n">L2_error_form</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">form</span><span class="p">(</span><span class="n">ufl</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">uh</span> <span class="o">-</span> <span class="n">u_D</span><span class="p">,</span> <span class="n">uh</span> <span class="o">-</span> <span class="n">u_D</span><span class="p">)</span> <span class="o">*</span> <span class="n">ufl</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
+    <span class="n">error_local</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">assemble_scalar</span><span class="p">(</span><span class="n">L2_error_form</span><span class="p">)</span>
+    <span class="n">error_global</span> <span class="o">=</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">allreduce</span><span class="p">(</span><span class="n">error_local</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+
+    <span class="n">norm_u_D_form</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">form</span><span class="p">(</span><span class="n">ufl</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">u_D</span><span class="p">,</span> <span class="n">u_D</span><span class="p">)</span> <span class="o">*</span> <span class="n">ufl</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
+    <span class="n">norm_u_D_local</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">assemble_scalar</span><span class="p">(</span><span class="n">norm_u_D_form</span><span class="p">)</span>
+    <span class="n">norm_u_D_global</span> <span class="o">=</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">allreduce</span><span class="p">(</span><span class="n">norm_u_D_local</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">norm_u_D_global</span> <span class="o">&gt;</span> <span class="mf">1e-12</span><span class="p">:</span>
+        <span class="n">relative_L2_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">error_global</span> <span class="o">/</span> <span class="n">norm_u_D_global</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Relative L2 error for annulus: </span><span class="si">{</span><span class="n">relative_L2_error</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main function to run the solvers.&quot;&quot;&quot;</span>
+    <span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+
+    <span class="n">solve_l_shape_problem</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span>
+    <span class="n">solve_annulus_problem</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+</div>
+        </section>
+        
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div><strong>Julian L. Avila-Martinez</strong> · Academic &amp; Scientific Computing Portfolio · Quarto Notebook &amp; Code Publication</div>
+      <div class="file-links">
+        <a href="../index.html" class="file-link">Portfolio Home</a>
+        <a href="index.html" class="file-link">All Published Notebooks</a>
+        <a href="https://github.com/Julian-L-Avila/JulianLAvila" class="file-link" target="_blank">GitHub Repository</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

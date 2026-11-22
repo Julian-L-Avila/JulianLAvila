@@ -1,7 +1,7 @@
 # Academic Research Portfolio
 
-**Julian Leonardo Avila-Martinez**  
-*B.Sc. in Physics (Graduation: December 2026 · All 145 Credits & Thesis Defense Completed · Ranked 2nd in Cohort / Top 2%, GPA 4.54/5.00) · Universidad Distrital Francisco José de Caldas (Bogotá D.C., Colombia)*  
+**Julian L. Avila-Martinez**  
+*B.Sc. in Physics (Graduation: December 2026) · Universidad Distrital Francisco José de Caldas (Bogotá D.C., Colombia)*  
 **ORCID:** [`0009-0002-8630-1922`](https://orcid.org/0009-0002-8630-1922) · **CvLAC (Minciencias):** [`0002012647`](https://scienti.minciencias.gov.co/cvlac/visualizador/generarCurriculoCv.do?cod_rh=0002012647) · **GitHub:** [`@Julian-L-Avila`](https://github.com/Julian-L-Avila)
 
 ---
@@ -11,8 +11,8 @@
 ### *Foundations of the Dirac Equation: From Relativistic Principles to Clifford Algebras*
 - **Institution:** Universidad Distrital Francisco José de Caldas, Facultad de Ciencias Matemáticas y Naturales, Programa Académico de Física
 - **Modality:** Research Monograph (Written in English · Defended under *Acta de Sustentación No. 020 de 2026*)
-- **Honors:** **Nominated / Under Evaluation for Meritorious Thesis Mention (*Mención Meritoria*)**
-- **Graduation Date:** December 2026 (All academic requirements fulfilled; available immediately)
+- **Honors:** **Nominated for Meritorious Thesis Mention (*Mención Meritoria*)**
+- **Graduation Date:** December 2026 (All academic requirements fulfilled)
 - **Thesis Advisor (*Director*):** **Dr. Asdrúbal Moreno-Mosquera** (Tenured Professor & Physics Program Coordinator, UDFJC; Ph.D. in Physics, Universidad de Salamanca, Spain — IUFFyM, `amorenom@udistrital.edu.co`)
 - **Direct Files in Repository ([`projects/01-mathematical-and-theoretical-physics/undergraduate-thesis-dirac-clifford/`](../projects/01-mathematical-and-theoretical-physics/undergraduate-thesis-dirac-clifford/)):**
   - **Full Thesis Monograph (PDF):** [`foundations-of-the-dirac-equation-thesis.pdf`](../projects/01-mathematical-and-theoretical-physics/undergraduate-thesis-dirac-clifford/foundations-of-the-dirac-equation-thesis.pdf)
@@ -35,23 +35,19 @@
 ### 2.1 Chiral Dirac Equation & Seesaw Neutrino Mass Generation (Award-Winning CIFI-SEMA 2026 Research)
 - **Poster Title:** *Chiral Dirac Equation: Degrees of Freedom and Neutrino's Mass*
 - **Manuscript in Preparation:** *Hermiticity and Mass Generation in the Chiral Dirac Equation* (Working paper in preparation)
-- **Authors:** **Julian L. Avila-Martinez**, Sebastian Rodriguez-Garcia,Leidy Y. Herrera-Martinez, and Dr. José Alfonso Leyva Rojas (Pontificia Universidad Javeriana)
+- **Authors:** **Julian L. Avila-Martinez**, Sebastian Rodriguez-Garcia, Leidy Y. Herrera-Martinez, and Dr. José Alfonso Leyva Rojas (Pontificia Universidad Javeriana)
 - **Award:** **Third Best Poster Award (Particle & High-Energy Physics Category)**, Congreso Internacional de Física e Ingeniería — *CIFI-SEMA 2026* (Poster ID `FP6-P3`), Universidad Simón Bolívar, Barranquilla, Colombia (May 2026).
 - **Direct Files in Repository ([`projects/01-mathematical-and-theoretical-physics/chiral-dirac-and-neutrino-mass/`](../projects/01-mathematical-and-theoretical-physics/chiral-dirac-and-neutrino-mass/)):**
   - [`cifi-sema-2026-poster.pdf`](../projects/01-mathematical-and-theoretical-physics/chiral-dirac-and-neutrino-mass/cifi-sema-2026-poster.pdf) — Award-winning CIFI-SEMA 2026 poster
   - [`poster.tex`](../projects/01-mathematical-and-theoretical-physics/chiral-dirac-and-neutrino-mass/poster.tex) & [`chiral-references.bib`](../projects/01-mathematical-and-theoretical-physics/chiral-dirac-and-neutrino-mass/chiral-references.bib)
-- **Summary of Contributions:**
-  - Generalizes the Dirac mass term via the chiral mass matrix $M = m_1 \mathbb{I}_4 + i m_2 \gamma^5$, governed by $(i\gamma^\mu\partial_\mu - m_1 - i m_2 \gamma^5)\psi = 0$.
-  - Proves that the modified Hamiltonian $H = \vec{\alpha}\cdot\vec{p} + \beta(m_1 + i m_2 \gamma^5)$ is pseudo-Hermitian ($\eta H \eta^{-1} = H^\dagger$ with metric $\eta = \gamma^0 \gamma^5$) and preserves the real relativistic dispersion relation $E^2 = |\vec{p}|^2 + m_1^2 - m_2^2$ in the unbroken $\mathcal{PT}$-symmetric regime $|m_1| \ge |m_2|$.
-  - Splits Left/Right chiral projections into non-degenerate mass eigenstates $m_\pm = m_1 \pm \sqrt{m_1^2 - m_2^2}$, reproducing the Type-I Seesaw hierarchy ($m_- \approx m_2^2 / 2m_1 \ll m_1$) for light active neutrinos ($m_- \sim 10^{-2}\text{ eV}$) and heavy sterile states ($m_+ \sim 2m_1$) without auxiliary scalar fields.
 
 ### 2.2 `dirac-solver`: C++17 / `pybind11` / Python Library for the (3+1)D Dirac Equation
 - **Co-Authors:** **Julian L. Avila-Martinez**, Sebastian Rodriguez-Garcia, and Camilo Andres Huertas-Archila (Software Registration Pending, 2026)
+- **Quarto Published Notebooks:** [`../notebooks/dirac-physics-verification.html`](../notebooks/dirac-physics-verification.html) & [`../notebooks/dirac-1d-and-yukawa.html`](../notebooks/dirac-1d-and-yukawa.html)
 - **Direct Files in Repository ([`projects/02-computational-physics-and-software/dirac-equation-solver/`](../projects/02-computational-physics-and-software/dirac-equation-solver/) & [`sta-qed-and-dirac-solver-proposal/`](../projects/02-computational-physics-and-software/sta-qed-and-dirac-solver-proposal/)):**
   - Reproducible verification notebooks: [`physics_verification.ipynb`](../projects/02-computational-physics-and-software/dirac-equation-solver/physics_verification.ipynb), [`dirac_solver_1d_example.ipynb`](../projects/02-computational-physics-and-software/dirac-equation-solver/dirac_solver_1d_example.ipynb), [`yukawa.ipynb`](../projects/02-computational-physics-and-software/dirac-equation-solver/yukawa.ipynb)
   - C++17 core & Python bindings: [`cpp_src/`](../projects/02-computational-physics-and-software/dirac-equation-solver/cpp_src/), [`dirac_solver/`](../projects/02-computational-physics-and-software/dirac-equation-solver/dirac_solver/), [`tests/test_integration.py`](../projects/02-computational-physics-and-software/dirac-equation-solver/tests/test_integration.py)
-  - Software engineering documentation: [`dirac-solver-doxygen-refman.pdf`](../projects/02-computational-physics-and-software/dirac-equation-solver/dirac-solver-doxygen-refman.pdf), [`design-pattern.md`](../projects/02-computational-physics-and-software/dirac-equation-solver/design-pattern.md), [`requirements-engineering.md`](../projects/02-computational-physics-and-software/dirac-equation-solver/requirements-engineering.md)
-  - Companion 1D spectral Split-Operator FFT solver & `sta-qed` architecture specification: [`dirac_1d_split_operator.py`](../projects/02-computational-physics-and-software/dirac-equation-solver/dirac_solver/core.py), [`test_dirac_1d.py`](../projects/02-computational-physics-and-software/dirac-equation-solver/tests/test_integration.py), [`sta-qed-library-proposal.pdf`](../projects/02-computational-physics-and-software/sta-qed-and-dirac-solver-proposal/sta-qed-dirac-solver-proposal.pdf)
+  - Software engineering documentation: [`dirac-solver-doxygen-refman.pdf`](../projects/02-computational-physics-and-software/dirac-equation-solver/dirac-solver-doxygen-refman.pdf), [`design-pattern.md`](../projects/02-computational-physics-and-software/dirac-equation-solver/design-pattern.md), [`requirements-engineering.md`](../projects/02-computational-physics-and-software/dirac-equation-solver/requirements-engineering.md), [`sta-qed-dirac-solver-proposal.pdf`](../projects/02-computational-physics-and-software/sta-qed-and-dirac-solver-proposal/sta-qed-dirac-solver-proposal.pdf)
 
 ---
 
@@ -73,40 +69,12 @@
 
 ## 4. Topological Phases of Matter, Semiclassical JWKB & Quantum Foundations
 
-### 4.1 Classification of Topological Phases via Clifford Algebras & K-Theory
-- **Venue:** *International Symposium on Quantum Science and Engineering (ISQSE 2025)*, Tunja, Colombia (Nov 2025) & *Voices of Physics* (UDFJC)
-- **Authors:** **Julian L. Avila-Martinez** and Dr. Asdrúbal Moreno-Mosquera
-- **Direct Files:** [`survey-topological-phases-iqse2025.pdf`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/survey-topological-phases-iqse2025.pdf) & [`references-iqse.bib`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/references-iqse.bib)
-- **Summary:** Contrasts the Ginzburg–Landau–Wilson spontaneous symmetry breaking paradigm with global topological order ($\mathbb{Z}$ and $\mathbb{Z}_2$ invariants). Demonstrates how time-reversal ($T$), particle-hole ($C$), and chiral ($S$) symmetries generate real and complex Clifford algebra extension problems $\mathcal{C}\ell_{p,q} \to \mathcal{C}\ell_{p,q+1}$ whose classifying spaces $C_q$ and $R_q$ yield Kitaev's Periodic Table via Bott periodicity ($R_{q+8} \simeq R_q$) and bulk-boundary correspondence via the Atiyah–Singer index theorem.
-
-### 4.2 The Eikonal as a Bridge to the Schrödinger Equation (Classical Limit & JWKB)
-- **Venue:** *XXX Congreso Nacional de Física*, Manizales, Colombia (Oct 2025)
-- **Direct Files:** [`eikonal-jwkb-xxxcnf2025.pdf`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/eikonal-jwkb-xxxcnf2025.pdf) & [`references-xxxcnf.bib`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/references-xxxcnf.bib)
-- **Summary:** Traces Hamilton's optomechanical analogy between Fermat's principle (eikonal equation $(\nabla S)^2 = n^2$) and Maupertuis' principle (Hamilton–Jacobi equation), deriving the semiclassical JWKB hierarchy ($\hbar \to 0$) from $\psi = A \exp(iS/\hbar)$ up to the $\mathcal{O}(\hbar^1)$ probability current conservation law $\partial_t \rho + \nabla\cdot(\rho \nabla S_0 / m) = 0$.
-
-### 4.3 The Vector Algebra War (*La Guerra del Álgebra Vectorial*)
-- **Venue:** *III Semana de la Ciencia — Simposio de Historia de la Ciencia*, UDFJC, Bogotá, Colombia (Oct 2026)
-- **Direct Files:** [`guerra-vectorial-2026.pdf`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/guerra-vectorial-2026.pdf) & [`references-iiiscienceweek.bib`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/references-iiiscienceweek.bib)
-
-### 4.4 Quantum Mechanics Monographs & AI-Benchmark Reference Derivations
-- **Direct Files ([`projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/)):**
-  - **CSCO in a 4D Hilbert Space (AI Reasoning Benchmark):** [`csco-4d-hilbert-space.pdf`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/csco-4d-hilbert-space.pdf) & [`.tex`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/csco-4d-hilbert-space.tex)
-  - **Mathematics of Quantum Entanglement:** [`quantum-entanglement-monograph.pdf`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/quantum-entanglement-monograph.pdf) & [`.tex`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/quantum-entanglement-maths.tex)
-  - **Angular Momentum Representation & Spherical Harmonics:** [`angular-momentum-representation.pdf`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/angular-momentum-representation.pdf)
-  - **Two Identical Spin-1/2 Fermions in a 1D Infinite Well:** [`two-fermions-infinite-well.pdf`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/two-fermions-infinite-well.pdf)
-  - **Potential Well as a Logical Qubit:** [`potential-well-logical-qubit.pdf`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/potential-well-logical-qubit.pdf)
-
----
-
-## 5. Condensed Matter, Nanomaterials & Experimental Physics
-
-1. **Nonlinear Optical Properties of Silver Nanoparticles ([`agnp-nonlinear-optics/`](../projects/04-nanomaterials-and-condensed-matter/biogenic-agnp-nonlinear-optics/)):**
-   - [`agnp-nonlinear-optics-paper.pdf`](../projects/04-nanomaterials-and-condensed-matter/biogenic-agnp-nonlinear-optics/agnp-nonlinear-optics-review.pdf) & [`agnp-nonlinear-optics-slides.pdf`](../projects/04-nanomaterials-and-condensed-matter/biogenic-agnp-nonlinear-optics/agnp-poster.pdf) — Review of third-order susceptibility $\chi^{(3)}$, Z-scan characterization of nonlinear refraction ($n_2$) and saturable/reverse-saturable absorption ($\beta$), and localized surface plasmon resonance (LSPR) enhancement.
-2. **XRF/XRD Characterization of Silver Nitrate & Clifford Bivector Crystallography ([`silver-nitrate-characterization/`](../projects/04-nanomaterials-and-condensed-matter/silver-nitrate-characterization/)):**
-   - [`silver-nitrate-characterization-paper.pdf`](../projects/04-nanomaterials-and-condensed-matter/silver-nitrate-characterization/silver-nitrate-characterization-paper.pdf) & [`crystal-structures-and-bivector-miller-indices.pdf`](../projects/04-nanomaterials-and-condensed-matter/silver-nitrate-characterization/crystal-structures-and-bivector-miller-indices.pdf) — Combines experimental X-ray fluorescence/diffraction synthesis metrology with an algebraic reformulation of Miller indices as reciprocal-lattice bivectors in $\mathcal{C}\ell_{3,0}$.
-3. **Graphene Tight-Binding Dispersion & $\mathcal{O}(h^6)$ Numerov Solver ([`numerov-quantum-and-graphene/`](../projects/02-computational-physics-and-software/numerov-quantum-and-graphene/)):**
-   - [`graphene_tight_binding_executed.ipynb`](../projects/02-computational-physics-and-software/numerov-quantum-and-graphene/graphene.sync.ipynb) & [`numerov.ipynb`](../projects/02-computational-physics-and-software/numerov-quantum-and-graphene/basic-potentials.ipynb) — Nearest-neighbor tight-binding band structure of honeycomb graphene lattices showing massless Dirac cones $E(\vec{q}) \approx \pm \hbar v_F |\vec{q}|$ at $K, K'$ valleys.
-4. **Coupled Pendulums Normal-Mode Eigenvalue & FFT Experimental Validation ([`coupled-pendulums-normal-modes/`](../projects/05-experimental-systems-and-engineering/coupled-pendulums-normal-modes/)):**
-   - [`coupled-pendulums-paper.pdf`](../projects/05-experimental-systems-and-engineering/coupled-pendulums-normal-modes/coupled-pendulums-paper.pdf) & [`normal_modes_analysis_executed_v2.ipynb`](../projects/05-experimental-systems-and-engineering/coupled-pendulums-normal-modes/normal_modes_analysis_executed_v2.ipynb).
-5. **Modern Physics Experimental Metrology ([`modern-physics-experiments/`](../projects/05-experimental-systems-and-engineering/modern-physics-experiments/)):**
-   - [`electron-charge-to-mass-braun-tube.pdf`](../projects/05-experimental-systems-and-engineering/modern-physics-experiments/electron-charge-to-mass-braun-tube.pdf), [`millikan-oil-drop.pdf`](../projects/05-experimental-systems-and-engineering/modern-physics-experiments/millikan-oil-drop.pdf), [`photoelectric-effect-planck-constant.pdf`](../projects/05-experimental-systems-and-engineering/modern-physics-experiments/photoelectric-effect-planck-constant.pdf), [`electron-diffraction-graphite.pdf`](../projects/05-experimental-systems-and-engineering/modern-physics-experiments/electron-diffraction-graphite.pdf), [`balmer-series-spectroscopy.pdf`](../projects/05-experimental-systems-and-engineering/modern-physics-experiments/balmer-series-spectroscopy.pdf).
+1. **Classification of Topological Phases via Clifford Algebras & K-Theory (ISQSE 2025):** [`survey-topological-phases-iqse2025.pdf`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/survey-topological-phases-iqse2025.pdf) & [`references-iqse.bib`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/references-iqse.bib)
+2. **The Eikonal as a Bridge to the Schrödinger Equation (XXX CNF 2025):** [`eikonal-jwkb-xxxcnf2025.pdf`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/eikonal-jwkb-xxxcnf2025.pdf) & [`references-xxxcnf.bib`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/references-xxxcnf.bib)
+3. **The Vector Algebra War (III Semana de la Ciencia 2026):** [`guerra-vectorial-2026.pdf`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/guerra-vectorial-2026.pdf) & [`references-iiiscienceweek.bib`](../projects/01-mathematical-and-theoretical-physics/topological-phases-and-jwkb/references-iiiscienceweek.bib)
+4. **Quantum Mechanics Monographs & AI-Benchmark Reference Derivations ([`quantum-mechanics-foundations/`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/)):**
+   - [`csco-4d-hilbert-space.pdf`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/csco-4d-hilbert-space.pdf) & [`.tex`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/csco-4d-hilbert-space.tex)
+   - [`quantum-entanglement-monograph.pdf`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/quantum-entanglement-monograph.pdf) & [`.tex`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/quantum-entanglement-maths.tex)
+   - [`angular-momentum-representation.pdf`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/angular-momentum-representation.pdf)
+   - [`two-fermions-infinite-well.pdf`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/two-fermions-infinite-well.pdf)
+   - [`potential-well-logical-qubit.pdf`](../projects/01-mathematical-and-theoretical-physics/quantum-mechanics-foundations/potential-well-logical-qubit.pdf)

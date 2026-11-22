@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quarto Notebooks & Scientific Code Gallery | Julian L. Avila-Martinez — Quarto Computing Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <style>
+    pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.code-highlight .hll { background-color: #ffffcc }
+.code-highlight { background: #f8f8f8; }
+.code-highlight .c { color: #3D7B7B; font-style: italic } /* Comment */
+.code-highlight .err { border: 1px solid #FF0000 } /* Error */
+.code-highlight .k { color: #008000; font-weight: bold } /* Keyword */
+.code-highlight .o { color: #666666 } /* Operator */
+.code-highlight .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.code-highlight .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.code-highlight .cp { color: #9C6500 } /* Comment.Preproc */
+.code-highlight .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.code-highlight .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.code-highlight .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.code-highlight .gd { color: #A00000 } /* Generic.Deleted */
+.code-highlight .ge { font-style: italic } /* Generic.Emph */
+.code-highlight .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.code-highlight .gr { color: #E40000 } /* Generic.Error */
+.code-highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.code-highlight .gi { color: #008400 } /* Generic.Inserted */
+.code-highlight .go { color: #717171 } /* Generic.Output */
+.code-highlight .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.code-highlight .gs { font-weight: bold } /* Generic.Strong */
+.code-highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.code-highlight .gt { color: #0044DD } /* Generic.Traceback */
+.code-highlight .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.code-highlight .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.code-highlight .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.code-highlight .kp { color: #008000 } /* Keyword.Pseudo */
+.code-highlight .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.code-highlight .kt { color: #B00040 } /* Keyword.Type */
+.code-highlight .m { color: #666666 } /* Literal.Number */
+.code-highlight .s { color: #BA2121 } /* Literal.String */
+.code-highlight .na { color: #687822 } /* Name.Attribute */
+.code-highlight .nb { color: #008000 } /* Name.Builtin */
+.code-highlight .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.code-highlight .no { color: #880000 } /* Name.Constant */
+.code-highlight .nd { color: #AA22FF } /* Name.Decorator */
+.code-highlight .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.code-highlight .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.code-highlight .nf { color: #0000FF } /* Name.Function */
+.code-highlight .nl { color: #767600 } /* Name.Label */
+.code-highlight .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.code-highlight .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.code-highlight .nv { color: #19177C } /* Name.Variable */
+.code-highlight .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.code-highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.code-highlight .mb { color: #666666 } /* Literal.Number.Bin */
+.code-highlight .mf { color: #666666 } /* Literal.Number.Float */
+.code-highlight .mh { color: #666666 } /* Literal.Number.Hex */
+.code-highlight .mi { color: #666666 } /* Literal.Number.Integer */
+.code-highlight .mo { color: #666666 } /* Literal.Number.Oct */
+.code-highlight .sa { color: #BA2121 } /* Literal.String.Affix */
+.code-highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
+.code-highlight .sc { color: #BA2121 } /* Literal.String.Char */
+.code-highlight .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.code-highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.code-highlight .s2 { color: #BA2121 } /* Literal.String.Double */
+.code-highlight .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.code-highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.code-highlight .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.code-highlight .sx { color: #008000 } /* Literal.String.Other */
+.code-highlight .sr { color: #A45A77 } /* Literal.String.Regex */
+.code-highlight .s1 { color: #BA2121 } /* Literal.String.Single */
+.code-highlight .ss { color: #19177C } /* Literal.String.Symbol */
+.code-highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.code-highlight .fm { color: #0000FF } /* Name.Function.Magic */
+.code-highlight .vc { color: #19177C } /* Name.Variable.Class */
+.code-highlight .vg { color: #19177C } /* Name.Variable.Global */
+.code-highlight .vi { color: #19177C } /* Name.Variable.Instance */
+.code-highlight .vm { color: #19177C } /* Name.Variable.Magic */
+.code-highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
+    .quarto-doc-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 2.2rem;
+      padding: 2.5rem 0 4rem;
+      align-items: start;
+    }
+    @media (max-width: 960px) {
+      .quarto-doc-layout { grid-template-columns: 1fr; }
+    }
+    .quarto-sidebar {
+      position: sticky;
+      top: 84px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      font-size: 0.85rem;
+    }
+    .quarto-sidebar h4 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    .quarto-sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .quarto-sidebar a {
+      color: var(--text-secondary);
+      display: block;
+      padding: 0.3rem 0.5rem;
+      border-radius: 5px;
+      transition: var(--transition);
+    }
+    .quarto-sidebar a:hover, .quarto-sidebar a.active {
+      color: var(--accent);
+      background: var(--accent-soft);
+      font-weight: 600;
+    }
+    .quarto-main {
+      min-width: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.2rem 2.4rem;
+      box-shadow: var(--shadow);
+    }
+    .quarto-title-banner {
+      background: linear-gradient(135deg, #58187C 0%, #2D0C40 100%);
+      color: #FFFFFF;
+      padding: 2.4rem 0 2rem;
+      border-bottom: 4px solid #00A896;
+    }
+    .quarto-title-banner .cat-pill {
+      display: inline-block;
+      background: rgba(0, 168, 150, 0.25);
+      border: 1px solid #00A896;
+      color: #7CE8DC;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+    .quarto-title-banner h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.6rem, 3vw, 2.3rem);
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+      color: #FFFFFF;
+    }
+    .quarto-title-banner p {
+      color: #E2D6EC;
+      font-size: 1rem;
+      max-width: 820px;
+    }
+    .quarto-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      margin-top: 1.1rem;
+      font-size: 0.83rem;
+      color: #D4C3E3;
+    }
+    .quarto-section-box {
+      margin-bottom: 2.8rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .quarto-section-box:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .quarto-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid var(--accent);
+    }
+    .quarto-section-header h2 {
+      font-size: 1.25rem;
+      color: var(--accent);
+      margin: 0;
+    }
+    .quarto-md-cell {
+      margin: 1.1rem 0;
+      line-height: 1.7;
+      color: var(--text-primary);
+    }
+    .quarto-md-cell h1, .quarto-md-cell h2, .quarto-md-cell h3 {
+      color: var(--accent);
+      margin-top: 1.4rem;
+      margin-bottom: 0.6rem;
+    }
+    .quarto-code-cell {
+      margin: 1.15rem 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #F8F9FB;
+    }
+    [data-theme="dark"] .quarto-code-cell {
+      background: #170F22;
+    }
+    .code-cell-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.35rem 0.85rem;
+      background: var(--accent-soft);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .code-highlight pre {
+      margin: 0;
+      padding: 0.95rem 1.1rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      background: transparent !important;
+    }
+    .quarto-cell-outputs {
+      border-top: 1px solid var(--border);
+      padding: 0.9rem 1.1rem;
+      background: var(--bg-primary);
+    }
+    .cell-stream, .cell-text-out {
+      margin: 0.3rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      color: var(--text-secondary);
+    }
+    .cell-error-out {
+      margin: 0.3rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      white-space: pre-wrap;
+      color: #b91c1c;
+    }
+    .cell-figure {
+      margin: 0.65rem 0;
+      text-align: center;
+    }
+    .cell-figure img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #FFFFFF;
+      padding: 6px;
+    }
+  </style>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-inner">
+      <a href="../index.html" class="brand">
+        <span class="brand-badge">Cl<sub>1,3</sub></span>
+        <span>Julian L. Avila-Martinez</span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html">← Back to Portfolio</a>
+        <a href="index.html">Quarto Notebooks &amp; Code Index</a>
+        <a href="../index.html#projects">All Projects</a>
+        <a href="../cv/cv-julian-l-avila.pdf" target="_blank">CV (PDF)</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="quarto-title-banner">
+    <div class="container">
+      <span class="cat-pill">Quarto Scientific Publishing · Interactive Notebooks &amp; Source Code</span>
+      <h1>Published Jupyter Notebooks &amp; Scientific Code Gallery</h1>
+      <p>Rendered computational physics notebooks, machine learning benchmarks, and multi-language simulation kernels (Python, C++17, Fortran 90, C, Julia) authored by Julian L. Avila-Martinez.</p>
+    </div>
+  </section>
+  <div class="container" style="padding: 2.5rem 0 4rem;">
+    <div class="projects-grid">
+      
+    <article class="project-card">
+      <span class="card-cat">Computational Physics &amp; Scientific Software · Python · C++17 · pybind11</span>
+      <h3 class="card-title"><a href="dirac-physics-verification.html">Dirac-Solver: Relativistic (3+1)D Physics Verification &amp; C++17/Python Core</a></h3>
+      <p class="card-desc">CFL Stability, Unitary Probability Conservation, Dispersion Relation &amp; C++17 FDTD Leapfrog Engine</p>
+      <div class="file-links">
+        <a href="dirac-physics-verification.html" class="file-link nb">🌐 Open Published Quarto Page (1 Notebooks, 4 Code Modules)</a>
+        <a href="dirac-physics-verification.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    <article class="project-card">
+      <span class="card-cat">Computational Physics &amp; Scientific Software · Python · C++17 · HDF5</span>
+      <h3 class="card-title"><a href="dirac-1d-and-yukawa.html">Dirac-Solver: 1D Relativistic Wavepackets &amp; 2D Yukawa Potential Simulations</a></h3>
+      <p class="card-desc">Gaussian Spinor Wavepacket Evolution, Zitterbewegung &amp; Short-Range Yukawa Scattering</p>
+      <div class="file-links">
+        <a href="dirac-1d-and-yukawa.html" class="file-link nb">🌐 Open Published Quarto Page (2 Notebooks, 2 Code Modules)</a>
+        <a href="dirac-1d-and-yukawa.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    <article class="project-card">
+      <span class="card-cat">Computational Quantum Mechanics · Python · NumPy · SciPy</span>
+      <h3 class="card-title"><a href="numerov-quantum-potentials.html">O(h⁶) Numerov Quantum Bound-State Solver for 1D Potentials</a></h3>
+      <p class="card-desc">High-Order Finite-Difference Integration of the Time-Independent Schrödinger Equation</p>
+      <div class="file-links">
+        <a href="numerov-quantum-potentials.html" class="file-link nb">🌐 Open Published Quarto Page (1 Notebooks, 1 Code Modules)</a>
+        <a href="numerov-quantum-potentials.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    <article class="project-card">
+      <span class="card-cat">Condensed Matter &amp; Computational Physics · Python · NumPy · Matplotlib</span>
+      <h3 class="card-title"><a href="graphene-tight-binding.html">Graphene Tight-Binding Dispersion &amp; Massless Dirac Cones</a></h3>
+      <p class="card-desc">Nearest-Neighbor Electronic Band Structure on the Honeycomb Lattice and K/K&#x27; Valley Linearization</p>
+      <div class="file-links">
+        <a href="graphene-tight-binding.html" class="file-link nb">🌐 Open Published Quarto Page (1 Notebooks, 0 Code Modules)</a>
+        <a href="graphene-tight-binding.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    <article class="project-card">
+      <span class="card-cat">Scientific Machine Learning (SciML) · Python · PyTorch / TensorFlow · C++</span>
+      <h3 class="card-title"><a href="pinn-damped-oscillator.html">Physics-Informed Neural Networks (PINNs) for Differential Equations</a></h3>
+      <p class="card-desc">Solving Damped Harmonic Oscillators by Embedding ODE Residuals into Deep Neural Network Loss Functions</p>
+      <div class="file-links">
+        <a href="pinn-damped-oscillator.html" class="file-link nb">🌐 Open Published Quarto Page (2 Notebooks, 2 Code Modules)</a>
+        <a href="pinn-damped-oscillator.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    <article class="project-card">
+      <span class="card-cat">Numerical PDEs &amp; Scientific Computing · Python · NumPy · SciPy</span>
+      <h3 class="card-title"><a href="poisson-finite-elements.html">2D Poisson Equation via the Galerkin Finite Element Method (FEM)</a></h3>
+      <p class="card-desc">Weak Variational Formulation, Triangular Mesh Stiffness Assembly &amp; Boundary Value Solutions</p>
+      <div class="file-links">
+        <a href="poisson-finite-elements.html" class="file-link nb">🌐 Open Published Quarto Page (1 Notebooks, 0 Code Modules)</a>
+        <a href="poisson-finite-elements.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    <article class="project-card">
+      <span class="card-cat">High-Energy Physics Data Mining &amp; Machine Learning · Python · scikit-learn · Pandas</span>
+      <h3 class="card-title"><a href="lhc-particle-classification.html">LHC High-Energy Particle Collision Classification Across 11 ML Architectures</a></h3>
+      <p class="card-desc">Comparative Benchmark of MLP Neural Networks (90.3% Accuracy), Random Forests, SVMs, KNN &amp; Decision Trees</p>
+      <div class="file-links">
+        <a href="lhc-particle-classification.html" class="file-link nb">🌐 Open Published Quarto Page (3 Notebooks, 1 Code Modules)</a>
+        <a href="lhc-particle-classification.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    <article class="project-card">
+      <span class="card-cat">Numerical Analysis &amp; Dynamical Systems · Python · C++17 · SciPy</span>
+      <h3 class="card-title"><a href="adaptive-rk45-and-nonlinear-odes.html">Adaptive Dormand–Prince RK45 &amp; Nonlinear Anharmonic Oscillators</a></h3>
+      <p class="card-desc">Step-Size Control, Phase-Space Portraits, and Comparative C++ ODE Integrator Benchmarks</p>
+      <div class="file-links">
+        <a href="adaptive-rk45-and-nonlinear-odes.html" class="file-link nb">🌐 Open Published Quarto Page (2 Notebooks, 2 Code Modules)</a>
+        <a href="adaptive-rk45-and-nonlinear-odes.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    <article class="project-card">
+      <span class="card-cat">Analytical Mechanics &amp; Scientific Computing · Julia · Symbolic-Numerical</span>
+      <h3 class="card-title"><a href="double-pendulum-julia.html">Chaotic Double Pendulum: Symbolic Euler–Lagrange &amp; Numerical Integration in Julia</a></h3>
+      <p class="card-desc">Lagrangian Mechanics, Coupled Nonlinear Equations of Motion, and Phase-Space Sensitivity</p>
+      <div class="file-links">
+        <a href="double-pendulum-julia.html" class="file-link nb">🌐 Open Published Quarto Page (1 Notebooks, 0 Code Modules)</a>
+        <a href="double-pendulum-julia.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    <article class="project-card">
+      <span class="card-cat">Experimental &amp; Computational Mechanics · Python · SciPy FFT · SymPy</span>
+      <h3 class="card-title"><a href="coupled-pendulums-fft.html">Normal Modes of Three Coupled Pendulums &amp; Experimental FFT Validation</a></h3>
+      <p class="card-desc">Lagrangian Eigenvalue Spectrum vs. Fast Fourier Transform of Video-Tracked Oscillations</p>
+      <div class="file-links">
+        <a href="coupled-pendulums-fft.html" class="file-link nb">🌐 Open Published Quarto Page (1 Notebooks, 1 Code Modules)</a>
+        <a href="coupled-pendulums-fft.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    <article class="project-card">
+      <span class="card-cat">Experimental Modern Physics · Python · SciPy · Matplotlib</span>
+      <h3 class="card-title"><a href="braun-tube-em-ratio.html">Electron Charge-to-Mass Ratio (e/m) Metrology &amp; Uncertainty Propagation</a></h3>
+      <p class="card-desc">Helmholtz Coil Magnetic Field Calibration, Parabolic Trajectory Fitting &amp; Statistical Residuals</p>
+      <div class="file-links">
+        <a href="braun-tube-em-ratio.html" class="file-link nb">🌐 Open Published Quarto Page (1 Notebooks, 0 Code Modules)</a>
+        <a href="braun-tube-em-ratio.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    <article class="project-card">
+      <span class="card-cat">High-Performance Computing &amp; Software Engineering · Fortran 90 · C · C++17 · Python · MATLAB</span>
+      <h3 class="card-title"><a href="hpc-multilanguage-code-showcase.html">Multi-Language Scientific Computing &amp; HPC Code Showcase (Fortran 90, C, C++17, Python)</a></h3>
+      <p class="card-desc">5-Language 2D Laplace PDE Benchmark, Fortran 90 Molecular Dynamics, C++ Pipe Fluid Flow, Unit-Tested Ideal Gas &amp; Control Systems</p>
+      <div class="file-links">
+        <a href="hpc-multilanguage-code-showcase.html" class="file-link nb">🌐 Open Published Quarto Page (0 Notebooks, 10 Code Modules)</a>
+        <a href="hpc-multilanguage-code-showcase.qmd" class="file-link tex">📝 Quarto Source (.qmd)</a>
+      </div>
+    </article>
+    
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div><strong>Julian L. Avila-Martinez</strong> · Academic &amp; Scientific Computing Portfolio · Quarto Notebook &amp; Code Publication</div>
+      <div class="file-links">
+        <a href="../index.html" class="file-link">Portfolio Home</a>
+        <a href="index.html" class="file-link">All Published Notebooks</a>
+        <a href="https://github.com/Julian-L-Avila/JulianLAvila" class="file-link" target="_blank">GitHub Repository</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

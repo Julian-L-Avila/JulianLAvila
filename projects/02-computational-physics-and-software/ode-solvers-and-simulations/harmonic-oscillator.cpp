@@ -3,7 +3,7 @@
  * Made by:
  * Bryan Martinez   - 20212107008
  * Laura Y. Herrera - 20212107011
- * Julian L. Avila  - 20212107030
+ * Julian L. Avila-Martinez
  * Juan S. Acuña    - 20212107034
  */
 

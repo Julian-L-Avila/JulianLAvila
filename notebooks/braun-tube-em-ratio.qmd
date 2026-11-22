@@ -1,0 +1,16 @@
+---
+title: "Electron Charge-to-Mass Ratio (e/m) Metrology & Uncertainty Propagation"
+subtitle: "Helmholtz Coil Magnetic Field Calibration, Parabolic Trajectory Fitting & Statistical Residuals"
+author: "Julian L. Avila-Martinez"
+categories: ["Experimental Modern Physics"]
+format:
+  html:
+    toc: true
+    code-copy: true
+---
+
+*Helmholtz Coil Magnetic Field Calibration, Parabolic Trajectory Fitting & Statistical Residuals*
+
+## Braun Cathode-Ray Tube Data Analysis (braun-tube-analysis.ipynb)
+
+Source notebook: [`projects/05-experimental-systems-and-engineering/modern-physics-experiments/braun-tube-analysis.ipynb`](../projects/05-experimental-systems-and-engineering/modern-physics-experiments/braun-tube-analysis.ipynb)

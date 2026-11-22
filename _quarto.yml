@@ -1,0 +1,47 @@
+project:
+  type: website
+  output-dir: _site
+  resources:
+    - "projects/**"
+    - "cv/**"
+    - "bibliography/**"
+    - "docs/**"
+    - "notebooks/**"
+    - ".nojekyll"
+
+website:
+  title: "Julian L. Avila-Martinez"
+  description: "Academic Research & Scientific Computing Portfolio of Julian L. Avila-Martinez"
+  site-url: "https://julian-l-avila.github.io/JulianLAvila/"
+  repo-url: "https://github.com/Julian-L-Avila/JulianLAvila"
+  navbar:
+    background: "#58187C"
+    foreground: "#FFFFFF"
+    left:
+      - text: "Home"
+        href: index.html
+      - text: "Notebooks & Code (Quarto)"
+        href: notebooks/index.html
+      - text: "Research Docs"
+        href: docs/research-portfolio.md
+      - text: "Computing & Engineering"
+        href: docs/technical-and-engineering-portfolio.md
+      - text: "CV (PDF)"
+        href: cv/cv-julian-l-avila.pdf
+    right:
+      - icon: github
+        href: https://github.com/Julian-L-Avila
+
+execute:
+  freeze: auto
+  enabled: false
+
+format:
+  html:
+    theme: cosmo
+    css: assets/css/style.css
+    toc: true
+    code-fold: false
+    code-tools: true
+    code-copy: true
+    html-math-method: mathjax

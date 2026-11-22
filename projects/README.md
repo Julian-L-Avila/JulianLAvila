@@ -1,6 +1,6 @@
 # Curated Showcase of Projects, Manuscripts, Notebooks & Scientific Code (`projects/`)
 
-This directory hosts a self-contained, curated collection of **compiled research monographs and papers (`.pdf`), LaTeX/TikZ source files (`.tex`, `.bib`), executable Jupyter notebooks (`.ipynb`), and scientific software source code (`.py`, `.cpp`, `.c`, `.f90`, `.jl`, `.m`, `.kicad_sch`)** authored by **Julian Leonardo Avila-Martinez**.
+This directory hosts a self-contained, curated collection of **compiled research monographs and papers (`.pdf`), LaTeX/TikZ source files (`.tex`, `.bib`), executable Jupyter notebooks (`.ipynb`), and scientific software source code (`.py`, `.cpp`, `.c`, `.f90`, `.jl`, `.m`, `.kicad_sch`)** authored by **Julian L. Avila-Martinez**.
 
 By hosting these work products directly in this repository, academic admissions committees, principal investigators, and technical hiring managers can inspect mathematical derivations, numerical benchmarks, and software architecture immediately without navigating across separate repositories.
 

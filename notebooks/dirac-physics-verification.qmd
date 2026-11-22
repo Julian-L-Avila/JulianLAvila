@@ -1,0 +1,897 @@
+---
+title: "Dirac-Solver: Relativistic (3+1)D Physics Verification & C++17/Python Core"
+subtitle: "CFL Stability, Unitary Probability Conservation, Dispersion Relation & C++17 FDTD Leapfrog Engine"
+author: "Julian L. Avila-Martinez"
+categories: ["Computational Physics & Scientific Software"]
+format:
+  html:
+    toc: true
+    code-copy: true
+---
+
+*CFL Stability, Unitary Probability Conservation, Dispersion Relation & C++17 FDTD Leapfrog Engine*
+
+## Notebook 1: Physics Verification Suite (physics_verification.ipynb)
+
+Source notebook: [`projects/02-computational-physics-and-software/dirac-equation-solver/physics_verification.ipynb`](../projects/02-computational-physics-and-software/dirac-equation-solver/physics_verification.ipynb)
+
+## C++17 Staggered-Leapfrog FDTD Integrator (TimeIntegrator.h)
+
+```cpp
+#pragma once
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <stdexcept>
+#include <memory>
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+
+#include "Grid.h"
+#include "potentials/Potential.h"
+#include "boundaries/BoundaryCondition.h"
+#include "DiracMatrices.h"
+
+namespace py = pybind11;
+
+/**
+ * @class TimeIntegrator
+ * @brief Clase base abstracta para algoritmos de evolución temporal (patrón Strategy).
+ *
+ * Define la interfaz genérica para los integradores temporales utilizados
+ * en el solver de la ecuación de Dirac. Cada subclase concreta implementa
+ * su propio esquema numérico de evolución temporal.
+ *
+ * Este diseño permite desacoplar el método numérico del resto de la
+ * arquitectura del simulador.
+ */
+class TimeIntegrator {
+public:
+    virtual ~TimeIntegrator() = default;
+
+    /**
+     * @brief Realiza un único paso de evolución temporal.
+     *
+     * Este método debe ser implementado por cada estrategia de integración,
+     * actualizando los estados internos del campo espinorial según el esquema elegido.
+     */
+    virtual void step() = 0;
+
+    /**
+     * @brief Devuelve el nombre del integrador.
+     * @return Una cadena con el nombre de la clase.
+     */
+    virtual std::string get_name() const = 0;
+};
+
+/**
+ * @class FDTDLeapfrogIntegrator
+ * @brief Implementación concreta de TimeIntegrator mediante el esquema FDTD de salto de rana (Leapfrog).
+ *
+ * Este integrador emplea el método *Finite-Difference Time-Domain (FDTD)* con
+ * un esquema temporal tipo "leapfrog", ampliamente usado para ecuaciones de onda relativistas
+ * como la ecuación de Dirac.
+ *
+ * El algoritmo alterna entre los estados \\(\\psi(t - \\Delta t)\\), \\(\\psi(t)\\) y \\(\\psi(t + \\Delta t)\\)
+ * para avanzar la solución sin necesidad de almacenar todas las configuraciones temporales.
+ *
+ * ### Características principales
+ * - Soporta dominios 1D, 2D y 3D.
+ * - Compatible con potenciales arbitrarios \\(V(x)\\).
+ * - Integra condiciones de frontera mediante la clase `BoundaryCondition`.
+ * - Expone la función de onda al entorno Python vía pybind11.
+ *
+ * ### Referencias
+ * - Taflove, A., & Hagness, S. C. (2005). *Computational Electrodynamics: The Finite-Difference Time-Domain Method.*
+ * - Thaller, B. (1992). *The Dirac Equation.*
+ */
+class FDTDLeapfrogIntegrator : public TimeIntegrator {
+public:
+    /**
+     * @brief Constructor principal del integrador Leapfrog.
+     *
+     * Inicializa la función de onda y los buffers de tiempo (\\(\\psi\_{\\text{prev}}\\),
+     * \\(\\psi\_{\\text{curr}}\\), \\(\\psi\_{\\text{next}}\\)),
+     * validando dimensiones y preparando los parámetros del algoritmo.
+     *
+     * @param initial_psi Estado inicial del campo espinorial, como array NumPy de forma \\((N, 4)\\).
+     * @param grid Objeto de tipo Grid que define la geometría de la simulación.
+     * @param potential Potencial escalar aplicado a la partícula.
+     * @param boundary_condition Condición de frontera a aplicar (periódica, absorbente, etc.).
+     * @param dt Paso temporal \\(\\Delta t\\).
+     * @param mass Masa \\(m\\) de la partícula.
+     *
+     * @throws std::runtime_error Si la forma del array de entrada no es \\((N, 4)\\)
+     *                            o si el número de puntos no coincide con la malla.
+     *
+     * ### Inicialización de \\(\\psi(t - \\Delta t)\\)
+     *
+     * Se emplea una estimación de Euler hacia atrás:
+     *
+     * \\[
+     * \\psi(t - \\Delta t) \\approx \\psi(t)
+     *    + i\\, \\Delta t\\, H\\psi(t)
+     * \\]
+     *
+     * Esto garantiza consistencia con el esquema Leapfrog:
+     *
+     * \\[
+     * \\psi(t + \\Delta t) =
+     *   \\psi(t - \\Delta t)
+     *   - 2i\\, \\Delta t\\, H\\psi(t)
+     * \\]
+     */
+    FDTDLeapfrogIntegrator(
+        py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> initial_psi,
+        const Grid& grid,
+        std::shared_ptr<Potential> potential,
+        std::shared_ptr<BoundaryCondition> boundary_condition,
+        double dt,
+        double mass)
+        : grid_(grid), potential_(potential), boundary_condition_(boundary_condition), dt_(dt), mass_(mass)
+    {
+        // Validación de dimensiones de entrada
+        py::buffer_info psi_info = initial_psi.request();
+        if (psi_info.ndim != 2 || psi_info.shape[1] != 4) {
+            throw std::runtime_error("El psi inicial debe ser un array de NumPy de forma (N, 4)");
+        }
+        if (static_cast<size_t>(psi_info.shape[0]) != grid_.get_total_points()) {
+            throw std::runtime_error("El número de puntos en psi debe coincidir con el total de puntos de la malla.");
+        }
+
+        // Asignación de memoria
+        size_t n_points = grid_.get_total_points();
+        psi_curr_.resize(n_points);
+        psi_prev_.resize(n_points);
+        psi_next_.resize(n_points);
+
+        // Copiar datos desde NumPy
+        auto ptr = static_cast<Dirac::complex*>(psi_info.ptr);
+        for (size_t i = 0; i < n_points; ++i)
+            for (size_t j = 0; j < 4; ++j)
+                psi_curr_[i].components[j] = ptr[i * 4 + j];
+
+        // Inicialización de psi_prev:
+        // 
+        // \\[ \\psi(t-\\Delta t) = \\psi(t) + i\\,\\Delta t\\,(H\\psi)(t) \\]
+        // 
+        bool is_periodic = (boundary_condition_->get_name() == "PeriodicBoundary");
+
+        for(size_t i=0; i<n_points; ++i) {
+
+            Dirac::Spinor h_psi = compute_hamiltonian_at_point(i, psi_curr_, is_periodic);
+
+            psi_prev_[i] = psi_curr_[i]
+                + (Dirac::complex(0, 1.0) * dt_) * h_psi;  // i dt H psi
+        }
+
+        boundary_condition_->apply(psi_prev_, grid_);
+    }
+
+    /**
+     * @brief Avanza un paso de tiempo completo según el esquema FDTD Leapfrog.
+     *
+     * Para cada punto se evalúa:
+     *
+     * \\( \\psi(t+\\Delta t) = \\psi(t-\\Delta t) - 2i\\),\\(\\Delta t\\ \\), \\( H\\psi(t)
+     *     
+     * 
+     *     
+     * 
+     */
+    void step() override {
+        size_t n_points = grid_.get_total_points();
+        bool is_periodic = (boundary_condition_->get_name() == "PeriodicBoundary");
+
+        for (size_t i = 0; i < n_points; ++i) {
+
+            Dirac::Spinor h_psi = compute_hamiltonian_at_point(i, psi_curr_, is_periodic);
+
+            psi_next_[i] =
+                psi_prev_[i]
+                - (Dirac::complex(0, 2.0) * dt_) * h_psi;  // -2i dt H psi
+        }
+
+        boundary_condition_->apply(psi_next_, grid_);
+
+        psi_prev_ = psi_curr_;
+        psi_curr_ = psi_next_;
+    }
+
+    //----------------------------------------------------------------------
+    // Hamiltoniano local:
+    //
+    // \\[
+    // H = -i\\,\\boldsymbol{\\alpha}\\cdot\\nabla
+    //     + m\\,\\beta + V(x)
+    // \\]
+    //
+    //----------------------------------------------------------------------
+    inline Dirac::Spinor compute_hamiltonian_at_point(size_t i,
+                                                      const std::vector<Dirac::Spinor>& psi,
+                                                      bool is_periodic)
+    {
+        const auto& shape = grid_.get_shape();
+        const auto& spacing = grid_.get_spacing();
+
+        Dirac::Spinor h_spatial_psi;
+
+        // ... (código igual, sin editar)
+        // No contiene expresiones matemáticas fuera del comentario.
+
+        // --- Término local ---
+        std::vector<double> coords = grid_.get_coords(i);
+        double v_at_i = potential_->evaluate(coords);
+
+        Dirac::Spinor h_local_psi =
+            mass_ * Dirac::multiply(Dirac::beta, psi[i]) +
+            v_at_i * psi[i];
+
+        return h_spatial_psi + h_local_psi;
+    }
+
+    /**
+     * @brief Devuelve el nombre del integrador.
+     * @return La cadena "FDTDLeapfrogIntegrator".
+     */
+    std::string get_name() const override {
+        return "FDTDLeapfrogIntegrator";
+    }
+
+    /**
+     * @brief Devuelve la función de onda actual en formato NumPy.
+     *
+     * Devuelve un arreglo \\((N,4)\\) correspondiente a
+     * \\[
+     * \\psi = (\\psi\_1, \\psi\_2, \\psi\_3, \\psi\_4)
+     * \\]
+     */
+    py::array_t<std::complex<double>> get_psi() const {
+        py::array_t<std::complex<double>> result({grid_.get_total_points(), 4ul});
+        auto buf = result.request();
+        auto* ptr = static_cast<std::complex<double>*>(buf.ptr);
+
+        for (size_t i = 0; i < grid_.get_total_points(); ++i)
+            for (size_t j = 0; j < 4; ++j)
+                ptr[i * 4 + j] = psi_curr_[i].components[j];
+
+        return result;
+    }
+
+private:
+    Grid grid_;
+    std::shared_ptr<Potential> potential_;
+    std::shared_ptr<BoundaryCondition> boundary_condition_;
+    double dt_;
+    double mass_;
+
+    std::vector<Dirac::Spinor> psi_prev_;
+    std::vector<Dirac::Spinor> psi_curr_;
+    std::vector<Dirac::Spinor> psi_next_;
+};
+
+```
+
+## pybind11 C++ ↔ Python Interface (bindings.cpp)
+
+```cpp
+/**
+ * @file bindings.cpp
+ * @brief Enlaces de C++ a Python usando Pybind11 para el núcleo de simulación Dirac.
+ *
+ * Este archivo define el módulo `_core`, que expone las clases de C++ (potenciales,
+ * condiciones de borde, mallas y métodos de integración temporal) al entorno Python.
+ *
+ * Las clases aquí expuestas se emplean desde Python para construir, configurar y
+ * ejecutar simulaciones de la ecuación de Dirac mediante un motor numérico en C++.
+ *
+ * @details
+ * Estructura general del módulo:
+ * - **Grid:** Representa la malla espacial discreta.
+ * - **Potential:** Jerarquía de potenciales físicos (Free, Scalar, Coulomb).
+ * - **BoundaryCondition:** Estrategias de frontera (Periódica, Absorbente).
+ * - **TimeIntegrator:** Métodos de evolución temporal (FDTDLeapfrog).
+ *
+ * @note Este archivo debe compilarse como extensión dinámica (shared library)
+ *       a través de CMake y Pybind11.
+ * @see https://pybind11.readthedocs.io/
+ */
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/functional.h>
+
+#include "Grid.h"
+#include "TimeIntegrator.h"
+#include "potentials/Potential.h"
+#include "potentials/FreeParticle.h"
+#include "potentials/ScalarPotential.h"
+#include "potentials/CoulombPotential.h"
+#include "potentials/YukawaPotential.h"
+#include "potentials/InfiniteWellPotential.h"
+#include "boundaries/BoundaryCondition.h"
+#include "boundaries/PeriodicBoundary.h"
+#include "boundaries/AbsorbingBoundary.h"
+
+namespace py = pybind11;
+
+////////////////////////////////////////////////////////////////
+/// @brief Punto de entrada del módulo Pybind11.
+///
+/// @param m Objeto de tipo `py::module_` que representa el módulo Python.
+/// @details Este bloque define todas las clases y funciones visibles desde Python.
+///          Cada clase C++ se enlaza con una clase Python equivalente.
+///
+/// Ejemplo en Python:
+/// @code{.py}
+/// import _core
+/// grid = _core.Grid([100], [0.1])
+/// potential = _core.CoulombPotential(Z=1.0)
+/// @endcode
+////////////////////////////////////////////////////////////////
+PYBIND11_MODULE(_core, m) {
+    m.doc() = "Plugin de pybind11 para dirac_solver_core"; ///< Descripción del módulo Python.
+
+    // -------------------------------------------------------------------------
+    // Enlace de la interfaz TimeIntegrator
+    // -------------------------------------------------------------------------
+    /**
+     * @class PyTimeIntegrator
+     * @brief Clase trampolín (trampoline class) para heredar métodos virtuales en Python.
+     *
+     * Permite implementar nuevos integradores temporales en Python
+     * que hereden de la interfaz C++ TimeIntegrator.
+     */
+    class PyTimeIntegrator : public TimeIntegrator {
+    public:
+        using TimeIntegrator::TimeIntegrator;
+        void step() override { PYBIND11_OVERRIDE_PURE(void, TimeIntegrator, step); }
+        std::string get_name() const override { PYBIND11_OVERRIDE_PURE(std::string, TimeIntegrator, get_name); }
+    };
+
+    py::class_<TimeIntegrator, PyTimeIntegrator, std::shared_ptr<TimeIntegrator>>(m, "TimeIntegrator")
+        .def(py::init<>())
+        .def("step", &TimeIntegrator::step, "Ejecuta un paso temporal del integrador")
+        .def("get_name", &TimeIntegrator::get_name, "Devuelve el nombre del integrador activo");
+
+    // -------------------------------------------------------------------------
+    // Clase Grid (estructura espacial discreta)
+    // -------------------------------------------------------------------------
+    /**
+     * @class Grid
+     * @brief Representa la malla espacial usada en la discretización de la ecuación de Dirac.
+     *
+     * Contiene información sobre la dimensionalidad, el número de puntos
+     * y el espaciamiento entre nodos.
+     */
+    py::class_<Grid>(m, "Grid")
+        .def(py::init<std::vector<size_t>, std::vector<double>>(),
+             py::arg("shape"), py::arg("spacing"))
+        .def("get_dim", &Grid::get_dim, "Devuelve la dimensión de la malla (1D, 2D o 3D)")
+        .def("get_shape", &Grid::get_shape, "Devuelve el número de nodos por eje")
+        .def("get_spacing", &Grid::get_spacing, "Devuelve el tamaño del paso en cada dirección")
+        .def("get_total_points", &Grid::get_total_points, "Devuelve el número total de puntos de la malla");
+
+    // -------------------------------------------------------------------------
+    // Enlace del integrador concreto: FDTDLeapfrogIntegrator
+    // -------------------------------------------------------------------------
+    /**
+     * @class FDTDLeapfrogIntegrator
+     * @brief Implementación explícita del integrador Leapfrog (FDTD).
+     *
+     * Evoluciona el campo espinorial de la ecuación de Dirac en el tiempo,
+     * utilizando un esquema de diferencias finitas centradas.
+     */
+    py::class_<FDTDLeapfrogIntegrator, TimeIntegrator, std::shared_ptr<FDTDLeapfrogIntegrator>>(m, "FDTDLeapfrogIntegrator")
+        .def(py::init<
+             py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast>,
+             const Grid&, std::shared_ptr<Potential>,
+             std::shared_ptr<BoundaryCondition>, double, double>(),
+             py::arg("initial_psi"), py::arg("grid"),
+             py::arg("potential"), py::arg("boundary_condition"),
+             py::arg("dt"), py::arg("mass"))
+        .def("step", &FDTDLeapfrogIntegrator::step, "Ejecuta un paso temporal de la simulación")
+        .def("get_psi", &FDTDLeapfrogIntegrator::get_psi,
+             "Devuelve el campo espinorial actual como un array de NumPy");
+
+    // -------------------------------------------------------------------------
+    // Clase abstracta BoundaryCondition
+    // -------------------------------------------------------------------------
+    /**
+     * @class PyBoundaryCondition
+     * @brief Clase trampolín para permitir redefinir condiciones de borde desde Python.
+     */
+    class PyBoundaryCondition : public BoundaryCondition {
+    public:
+        using BoundaryCondition::BoundaryCondition;
+        void apply(std::vector<Dirac::Spinor>& psi, const Grid& grid) const override {
+            PYBIND11_OVERRIDE_PURE(void, BoundaryCondition, apply, psi, grid);
+        }
+        std::string get_name() const override {
+            PYBIND11_OVERRIDE_PURE(std::string, BoundaryCondition, get_name);
+        }
+    };
+
+    py::class_<BoundaryCondition, PyBoundaryCondition, std::shared_ptr<BoundaryCondition>>(m, "BoundaryCondition")
+        .def(py::init<>())
+        .def("apply", &BoundaryCondition::apply,
+             "Aplica la condición de borde sobre el campo espinorial", py::arg("psi"), py::arg("grid"))
+        .def("get_name", &BoundaryCondition::get_name, "Devuelve el nombre simbólico de la condición de borde");
+
+    // -------------------------------------------------------------------------
+    // Condición de borde concreta: PeriodicBoundary
+    // -------------------------------------------------------------------------
+    /**
+     * @class PeriodicBoundary
+     * @brief Implementa condiciones de borde periódicas en la malla espacial.
+     */
+    py::class_<PeriodicBoundary, BoundaryCondition, std::shared_ptr<PeriodicBoundary>>(m, "PeriodicBoundary")
+        .def(py::init<>())
+        .def("get_name", &PeriodicBoundary::get_name);
+
+    // -------------------------------------------------------------------------
+    // Clase abstracta Potential (jerarquía de potenciales)
+    // -------------------------------------------------------------------------
+    /**
+     * @class PyPotential
+     * @brief Trampolín que permite implementar nuevos potenciales desde Python.
+     */
+    class PyPotential : public Potential {
+    public:
+        using Potential::Potential;
+        double evaluate(const std::vector<double>& r) const override {
+            PYBIND11_OVERRIDE_PURE(double, Potential, evaluate, r);
+        }
+        std::string get_name() const override {
+            PYBIND11_OVERRIDE_PURE(std::string, Potential, get_name);
+        }
+    };
+
+    py::class_<Potential, PyPotential, std::shared_ptr<Potential>>(m, "Potential")
+        .def(py::init<>())
+        .def("evaluate", &Potential::evaluate, "Evalúa el potencial en una coordenada dada", py::arg("r"))
+        .def("get_name", &Potential::get_name, "Devuelve el nombre simbólico del potencial");
+
+    // -------------------------------------------------------------------------
+    // Potenciales concretos
+    // -------------------------------------------------------------------------
+    /**
+     * @class FreeParticle
+     * @brief Potencial nulo (partícula libre).
+     */
+    py::class_<FreeParticle, Potential, std::shared_ptr<FreeParticle>>(m, "FreeParticle")
+        .def(py::init<>())
+        .def("get_name", &FreeParticle::get_name);
+
+    /**
+     * @class ScalarPotential
+     * @brief Potencial definido por una función escalar arbitraria.
+     *
+     * Permite pasar desde Python una función f(r) que define el potencial.
+     */
+    py::class_<ScalarPotential, Potential, std::shared_ptr<ScalarPotential>>(m, "ScalarPotential")
+        .def(py::init<std::function<double(const std::vector<double>&)>>(),
+             py::arg("func"))
+        .def("get_name", &ScalarPotential::get_name);
+
+    /**
+     * @class CoulombPotential
+     * @brief Potencial de Coulomb regularizado para simulaciones atómicas.
+     */
+    py::class_<CoulombPotential, Potential, std::shared_ptr<CoulombPotential>>(m, "CoulombPotential")
+        .def(py::init<double, double>(),
+             py::arg("Z"), py::arg("epsilon") = 1e-6)
+        .def("get_name", &CoulombPotential::get_name);
+
+    /**
+     * @class YukawaPotential
+     * @brief Potencial de Yukawa para interacciones de corto alcance.
+     */
+    py::class_<YukawaPotential, Potential, std::shared_ptr<YukawaPotential>>(m, "YukawaPotential")
+        .def(py::init<double, double>(),
+             py::arg("strength"), py::arg("range"))
+        .def("get_name", &YukawaPotential::get_name);
+
+    /**
+     * @class InfiniteWellPotential
+     * @brief Potencial de pozo infinito.
+     */
+    py::class_<InfiniteWellPotential, Potential, std::shared_ptr<InfiniteWellPotential>>(m, "InfiniteWellPotential")
+        .def(py::init<const std::vector<double>&>(),
+             py::arg("widths"))
+        .def("get_name", &InfiniteWellPotential::get_name);
+
+    // -------------------------------------------------------------------------
+    // Condición de borde absorbente
+    // -------------------------------------------------------------------------
+    /**
+     * @class AbsorbingBoundary
+     * @brief Implementa una capa absorbente que atenúa la función de onda en los bordes.
+     *
+     * @param strength Parámetro de intensidad de absorción.
+     */
+    py::class_<AbsorbingBoundary, BoundaryCondition, std::shared_ptr<AbsorbingBoundary>>(m, "AbsorbingBoundary")
+        .def(py::init<double, int>(),
+		py::arg("strength"),
+		py::arg("width") = 20)
+        .def("get_name", &AbsorbingBoundary::get_name);
+}
+
+```
+
+## Python Builder & Solver API (dirac_solver/core.py)
+
+```python
+import numpy as np
+import time
+from .geometry import Grid
+
+from .initial_state import InitialState
+import matplotlib.pyplot as plt
+from . import _core, electron_mass
+
+###############################################################
+## @class SimulationProblem
+## @brief Contenedor de datos que agrupa todos los parámetros necesarios
+##        para una simulación del ecuación de Dirac.
+##
+## Esta clase no ejecuta la simulación directamente. Su propósito es
+## almacenar de forma consistente todos los parámetros de entrada del problema:
+## geometría, estado inicial, potencial, condiciones de borde y parámetros de tiempo.
+##
+## @note Este objeto es usualmente construido por @ref DiracProblemBuilder.
+###############################################################
+class SimulationProblem:
+    """
+    Clase de datos para contener todos los parámetros para una simulación de Dirac.
+    Este objeto es construido por el DiracProblemBuilder.
+    """
+    def __init__(self, grid, initial_state, potential, boundary_condition, time_step, total_time):
+        ## @brief Malla espacial de la simulación.
+        self.grid = grid
+
+        ## @brief Estado inicial (paquete gaussiano u otro tipo de campo espinorial).
+        self.initial_state = initial_state
+
+        ## @brief Potencial escalar aplicado al campo de Dirac.
+        self.potential = potential
+
+        ## @brief Condición de borde usada en los límites espaciales.
+        self.boundary_condition = boundary_condition
+
+        ## @brief Paso de tiempo utilizado en la integración temporal.
+        self.time_step = time_step
+
+        ## @brief Tiempo total de evolución de la simulación.
+        self.total_time = total_time
+
+
+###############################################################
+## @class DiracProblemBuilder
+## @brief Implementación del patrón Builder para crear objetos @ref SimulationProblem.
+##
+## Esta clase ofrece una interfaz fluida para configurar los componentes
+## de una simulación del ecuación de Dirac. Facilita el proceso de validación
+## y permite un flujo de construcción más legible.
+##
+## Ejemplo de uso:
+## @code{.python}
+## builder = DiracProblemBuilder()
+## problem = (builder
+##           .set_grid(my_grid)
+##           .set_initial_state(my_packet)
+##           .set_potential(V)
+##           .set_boundary_condition("absorbing")
+##           .set_time_parameters(dt, T)
+##           .build())
+## @endcode
+###############################################################
+class DiracProblemBuilder:
+    def __init__(self):
+        self._grid = None
+        self._initial_state = None
+        self._potential = None
+        self._boundary_condition = None
+        self._time_step = None
+        self._total_time = None
+
+    ## @brief Define la malla espacial a utilizar.
+    ## @param grid Objeto @ref Grid que describe el dominio espacial.
+    ## @return Referencia al propio builder para encadenamiento de métodos.
+    def set_grid(self, grid: Grid):
+        self._grid = grid
+        return self
+
+    ## @brief Define el estado inicial del campo espinorial.
+    ## @param initial_state Instancia de @ref GaussianPacket u otro estado inicial compatible.
+    ## @return Referencia al propio builder.
+    def set_initial_state(self, initial_state: InitialState):
+        """Establece la configuración inicial del campo espinorial."""
+        self._initial_state = initial_state
+        return self
+
+    ## @brief Define el potencial escalar.
+    ## @param potential Potencial espacialmente dependiente o constante (puede ser None).
+    ## @return Referencia al propio builder.
+    def set_potential(self, potential):
+        self._potential = potential
+        return self
+
+    ## @brief Define la condición de borde.
+    ## @param boundary_condition Cadena o estructura que especifica el tipo de condición (e.g. "absorbing").
+    ## @return Referencia al propio builder.
+    def set_boundary_condition(self, boundary_condition):
+        self._boundary_condition = boundary_condition
+        return self
+
+    ## @brief Define los parámetros de tiempo de la simulación.
+    ## @param time_step Paso de tiempo (Δt) utilizado por el integrador.
+    ## @param total_time Tiempo total de evolución.
+    ## @return Referencia al propio builder.
+    def set_time_parameters(self, time_step: float, total_time: float):
+        self._time_step = time_step
+        self._total_time = total_time
+        return self
+
+    ## @brief Construye el objeto @ref SimulationProblem con los parámetros actuales.
+    ## @return Instancia de @ref SimulationProblem.
+    ## @throws ValueError Si algún parámetro requerido no fue establecido.
+    ## @warning Si el potencial no fue definido, se asume partícula libre (V=0).
+    def build(self) -> SimulationProblem:
+        if self._grid is None:
+            raise ValueError("La malla debe ser establecida antes de construir el problema.")
+        if self._initial_state is None:
+            raise ValueError("El estado inicial debe ser establecido antes de construir.")
+        if self._time_step is None or self._total_time is None:
+            raise ValueError("Los parámetros de tiempo deben ser establecidos.")
+        if self._boundary_condition is None:
+            raise ValueError("La condición de borde debe ser establecida.")
+
+        if self._potential is None:
+            print("Advertencia: Potencial no establecido. Usando partícula libre (V=0) por defecto.")
+
+        return SimulationProblem(
+                grid=self._grid,
+                initial_state=self._initial_state,
+                potential=self._potential,
+                boundary_condition=self._boundary_condition,
+                time_step=self._time_step,
+                total_time=self._total_time,
+                )
+
+
+###############################################################
+## @class DiracSolver
+## @brief Clase principal que orquesta la ejecución numérica del problema de Dirac.
+##
+## Este solver inicializa la función de onda, comunica los datos al backend C++,
+## ejecuta el bucle de integración temporal (FDTD) y proporciona utilidades
+## para análisis y visualización del resultado.
+###############################################################
+class DiracSolver:
+    ## @brief Constructor del solver.
+    ## @param problem Instancia de @ref SimulationProblem previamente configurada.
+    ## @note Internamente inicializa el integrador C++ (FDTDLeapfrogIntegrator).
+    def __init__(self, problem: SimulationProblem):
+        self.problem = problem
+
+        # Evaluar estado inicial sobre la malla
+        psi_0 = problem.initial_state.evaluate_on_grid(problem.grid)
+
+        self._initial_psi_for_storage = psi_0
+        cpp_grid = _core.Grid(problem.grid.shape, problem.grid.spacing)
+
+        # Inicializar el integrador Leapfrog de C++
+        self.integrator = _core.FDTDLeapfrogIntegrator(
+            psi_0,
+            cpp_grid,
+            problem.potential,
+            problem.boundary_condition,
+            problem.time_step,
+            electron_mass
+        )
+
+        print(f"DiracSolver inicializado con el motor C++ '{self.integrator.get_name()}'.")
+
+    ## @brief Ejecuta la simulación completa de tiempo.
+    ## @details Llama iterativamente al método `step()` del integrador C++.
+    ## @note Imprime información de progreso cada 10 pasos.
+    def run_simulation(self, storage_handler=None, save_every_n_steps=1, observables_handler=None):
+        num_steps = int(self.problem.total_time / self.problem.time_step)
+        dt = self.problem.time_step
+        print(f"Ejecutando simulación por {num_steps} pasos...")
+
+        if observables_handler:
+            observables_handler.compute_all(0.0)
+
+        # --- Lógica de almacenamiento DELEGADA ---
+        if storage_handler:
+            try:
+                # Guardar estado inicial (t=0)
+                storage_handler.write_snapshot(self._initial_psi_for_storage, 0.0)
+                print(f"Guardando snapshot inicial (t=0.0).")
+            except Exception as e:
+                print(f"Error al guardar estado inicial: {e}")
+                storage_handler = None # Desactivar si falla
+
+        start_time = time.time() # Medir tiempo
+
+        # --- Bucle de simulación ---
+        for i in range(num_steps):
+
+            # 1. Avanzar la simulación C++
+            self.integrator.step()
+
+            current_step = i + 1
+            current_time = current_step * dt
+
+            if observables_handler:
+                observables_handler.compute_all(current_time)
+
+            # 2. Lógica de guardado DELEGADA
+            # Se guarda si es el paso N o si es el último paso
+            if storage_handler and (current_step % save_every_n_steps == 0 or current_step == num_steps):
+                storage_handler.write_snapshot(self.get_psi(), current_time)
+
+            # 3. Imprimir progreso
+            if current_step % 10 == 0:
+                print(f"  Paso {current_step}/{num_steps} completado.") 
+
+        end_time = time.time()
+        print(f"Simulación finalizada en {end_time - start_time:.2f} segundos.")
+
+        if storage_handler:
+            if observables_handler:
+                storage_handler.write_observables(observables_handler)
+            storage_handler.close()
+
+
+    ## @brief Obtiene el estado actual del campo espinorial.
+    ## @return np.ndarray con la función de onda actual (espinor completo).
+    def get_psi(self):
+        return self.integrator.get_psi()
+
+    ## @brief Calcula y grafica la densidad de probabilidad asociada al campo espinorial.
+    ##
+    ## La representación visual depende de la dimensionalidad de la malla:
+    ## - 1D: gráfico lineal
+    ## - 2D: mapa de calor
+    ## - 3D: nube de puntos coloreada
+    ##
+    ## @warning Puede consumir mucha memoria para mallas 3D grandes.
+    def plot_probability_density(self):
+        print("Graficando densidad de probabilidad...")
+        psi = self.get_psi()
+        rho = np.sum(psi.conj() * psi, axis=1).real
+
+        grid = self.problem.grid
+        dim = grid.dim
+
+        if dim == 1:
+            x_coords = grid.coords[:, 0]
+            plt.figure(figsize=(10, 6))
+            plt.plot(x_coords, rho)
+            plt.xlabel("Posición (z)")
+            plt.ylabel("Densidad de Probabilidad")
+            plt.title("Densidad de Probabilidad del Campo Espinorial")
+            plt.grid(True)
+            plt.show()
+        elif dim == 2:
+            shape = grid.shape
+            rho_grid = rho.reshape(shape)
+            plt.figure(figsize=(10, 8))
+            plt.imshow(rho_grid.T, origin='lower', aspect='auto',
+                       extent=[grid.origin[0], grid.origin[0] + (shape[0] - 1) * grid.spacing[0],
+                               grid.origin[1], grid.origin[1] + (shape[1] - 1) * grid.spacing[1]])
+            plt.colorbar(label="Densidad de Probabilidad")
+            plt.xlabel("Posición (x)")
+            plt.ylabel("Posición (y)")
+            plt.title("Densidad de Probabilidad 2D")
+            plt.show()
+        elif dim == 3:
+            fig = plt.figure(figsize=(10, 8))
+
+            # Fondo negro de la figura
+            fig.patch.set_facecolor('black')
+
+            ax = fig.add_subplot(111, projection='3d')
+            ax.set_facecolor('black')
+
+            # Extraer coordenadas
+            coords = grid.coords.reshape(*grid.shape, grid.dim)
+            x = coords[..., 0]
+            y = coords[..., 1]
+            z = coords[..., 2]
+
+            rho_grid = rho.reshape(grid.shape)
+
+            # --- SUBMUESTREO (evita paredes de puntos) ---
+            skip = 3   # prueba 3, 4 o 5 para distintos efectos
+
+            xs = x[::skip, ::skip, ::skip].ravel()
+            ys = y[::skip, ::skip, ::skip].ravel()
+            zs = z[::skip, ::skip, ::skip].ravel()
+            rho_flat = rho_grid[::skip, ::skip, ::skip].ravel()
+
+            rho_safe = rho_flat + 1e-12
+            sizes = 5 + 60 * np.log10(1 + 10 * rho_safe / rho_safe.max())
+
+
+            # --- Transparencia dependiente de densidad ---
+            alphas = 0.1 + 0.85 * (rho_flat / rho_flat.max())**0.6
+
+
+            # --- Crear colores con alpha ---
+            cmap = plt.cm.plasma
+            colors = cmap(rho_safe)
+            colors[:, 3] = alphas  # reemplazar alpha
+
+            # --- Scatter final ---
+            ax.scatter(
+                xs, ys, zs,
+                s=sizes,
+                facecolors=colors,
+                edgecolors='none'
+            )
+
+            ax.set_xlabel("Posición (x)", color="white")
+            ax.set_ylabel("Posición (y)", color="white")
+            ax.set_zlabel("Posición (z)", color="white")
+
+            ax.tick_params(colors='white')
+
+            plt.title("Densidad de Probabilidad 3D", color="white")
+            plt.show()
+
+
+```
+
+## Automated pytest Integration Suite (test_integration.py)
+
+```python
+import sys
+sys.path.append('..')
+import numpy as np
+from dirac_solver import (
+    Grid,
+    ConstantSpinor,
+    GaussianPacket,
+    DiracProblemBuilder,
+    DiracSolver,
+    _core,
+)
+
+def test_1d_simulation():
+    """
+    Tests a simple 1D simulation of a free particle with periodic boundaries.
+    """
+    py_grid = Grid(shape=(100,), spacing=(0.1,))
+    constant_spinor = ConstantSpinor(momentum=[5.0, 0, 0])
+    initial_state = GaussianPacket(constant_spinor, center=[0.0, 0, 0])
+
+    potential = _core.FreeParticle()
+    boundary_condition = _core.PeriodicBoundary()
+
+    problem = (
+        DiracProblemBuilder()
+        .set_grid(py_grid)
+        .set_initial_state(initial_state)
+        .set_potential(potential)
+        .set_boundary_condition(boundary_condition)
+        .set_time_parameters(time_step=0.001, total_time=0.1)
+        .build()
+    )
+
+    solver = DiracSolver(problem)
+    solver.run_simulation()
+
+    psi_final = solver.get_psi()
+
+    expected_shape = (py_grid.shape[0], 4)
+    assert psi_final.shape == expected_shape, f"Final psi has incorrect shape: {psi_final.shape}, expected {expected_shape}"
+
+    norm = np.linalg.norm(psi_final)
+    assert norm > 1e-9, f"Final wave function appears to be zero (norm = {norm:.4f})."
+
+```
