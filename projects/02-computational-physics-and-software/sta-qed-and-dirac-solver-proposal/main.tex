@@ -1,0 +1,301 @@
+\documentclass[11pt, letterpaper]{article}
+
+% --- ESSENTIAL PACKAGES ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}           % For upright mu, etc.
+\usepackage[margin=1in]{geometry} % Sensible margins
+
+% --- MATH PACKAGES ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}          % Extends amsmath
+\usepackage{amsthm}             % For theorem environments
+
+% --- UTILITY PACKAGES ---
+\usepackage{graphicx}           % For including graphics
+\usepackage{booktabs}           % For professional-quality tables
+\usepackage{siunitx}            % For typesetting SI units and numbers
+\usepackage[noblocks]{authblk}  % For author affiliations
+
+% --- BIBLIOGRAPHY (MODERN APPROACH) ---
+\usepackage[backend=biber, style=numeric-comp, sorting=none]{biblatex}
+\addbibresource{references.bib} % Your .bib file
+
+% --- HYPERREF & CLEVEREF ---
+\usepackage[colorlinks=true, allcolors=blue]{hyperref} % For hyperlinks
+
+% cleveref must be loaded after hyperref and amsthm
+\usepackage[capitalise, noabbrev]{cleveref}
+
+% --- THEOREM-LIKE ENVIRONMENTS SETUP ---
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+
+% --- METADATA ---
+\title{Project Proposals for Software Development}
+\author[1]{Julian L. Avila}
+\author[1]{Camilo A. Huertas}
+\author[1]{Sebastian Rodriguez}
+\affil[1]{Programa Académico de Física, Facultad de Ciencias Matemáticas y
+	Naturales, Universidad Distrital Francisco José de Caldas, Bogotá D.C.,
+	Colombia}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+\section{Introduction}
+This proposal outlines the development of a scientific software package designed
+for problem-solving in relativistic quantum mechanics and quantum field theory.
+We present two potential project architectures that, while sharing a common
+theoretical foundation in geometric algebra, address different computational
+objectives. A critical evaluation of the scope and technical limitations of each
+path is essential for determining the final development strategy.
+
+The two proposed projects are:
+\begin{itemize}
+	\item \textbf{A Geometric Algebra QED Toolkit:} A symbolic and numerical
+		library for performing calculations in Quantum Electrodynamics (QED) and
+		Quantum Field Theory (QFT) founded upon the Space-Time Algebra (STA)
+		framework.
+	\item \textbf{A Numerical Dirac Equation Solver:} A dedicated numerical solver
+		for the Dirac equation, featuring a flexible interface for defining various
+		interaction potentials and boundary conditions, with the potential for
+		extension to curved spacetime.
+\end{itemize}
+
+\section{A Geometric Algebra QED Toolkit}
+
+\subsection{Project Goal}
+The primary objective of this project is to develop a robust symbolic and
+numerical library for performing calculations in Quantum Electrodynamics (QED)
+using the mathematical framework of Space-Time Algebra (STA), the Clifford
+algebra $\mathcal{C}\ell_{1,3}(\mathbb{R})$. The software will provide a
+high-level interface enabling users to define and manipulate fundamental objects
+such as spinors, Dirac operators, and interaction terms directly within the
+algebraic structure of STA, abstracting away the conventional matrix-based
+representations.
+
+\subsection{Core Features}
+
+\subsubsection{STA Core Engine}
+The foundation of the toolkit will be a computational engine implementing the
+algebra $\mathcal{C}\ell_{1,3}(\mathbb{R})$. This engine will be built upon a
+basis $\{\gamma_0, \gamma_1, \gamma_2, \gamma_3\}$ satisfying the
+anticommutation relation $\{\gamma_\mu, \gamma_\nu\} = 2\eta_{\mu\nu}$, where
+$\eta_{\mu\nu}$ is the Minkowski metric with signature $(+,-,-,-)$. The engine
+must support the full 16-dimensional multivector basis, which includes:
+\begin{itemize}
+	\item \textbf{Grade 0:} scalars (1 dimension)
+	\item \textbf{Grade 1:} vectors (4 dimensions)
+	\item \textbf{Grade 2:} bivectors (6 dimensions, e.g., $\gamma_0\gamma_1$)
+	\item \textbf{Grade 3:} trivectors (4 dimensions, e.g., $\gamma_1\gamma_2\gamma_3$)
+	\item \textbf{Grade 4:} the pseudoscalar $I = \gamma_0\gamma_1\gamma_2\gamma_3$
+\end{itemize}
+
+The core engine must implement the fundamental algebraic operations:
+\begin{itemize}
+	\item \textbf{Geometric Product:} $ab$
+	\item \textbf{Inner Product:} $a \cdot b = \frac{1}{2}(ab + ba)$
+	\item \textbf{Outer Product:} $a \wedge b = \frac{1}{2}(ab - ba)$
+\end{itemize}
+
+\subsubsection{Spinor Representation}
+In the STA framework, relativistic spinors are not represented as column vectors
+in $\mathbb{C}^4$, but as elements of the even subalgebra,
+$\mathcal{C}\ell^+_{1,3}(\mathbb{R})$, which is isomorphic to the Pauli algebra
+$\mathcal{C}\ell_{3,0}(\mathbb{R})$. A relativistic spinor $\psi$ is constructed
+by applying a Lorentz transformation to a spinor in its rest frame.
+
+Consequently, Lorentz transformations are not realized via matrix
+multiplication. Instead, they are represented by algebraic conjugation with a
+\textbf{rotor}, an element $R \in \mathrm{Spin}(1,3)$ satisfying $R\tilde{R}=1$:
+\[
+	\psi' = R\psi
+\]
+Rotors are generated within the algebra via the exponential map of a bivector $B$:
+\[
+	R = e^{B/2}
+\]
+This representation unifies boosts and rotations and is computationally more
+efficient and geometrically more insightful than the standard matrix approach.
+
+\subsubsection{The Dirac Equation in STA}
+The standard covariant Dirac equation, $(i\hbar\gamma^\mu\partial_\mu - mc)\psi
+= 0$, is translated into a remarkably compact and elegant real geometric
+equation:
+\[
+	\nabla\Psi I\sigma_3 = m\Psi
+\]
+Here, $\nabla = \gamma^\mu\partial_\mu$ is the vector derivative, $\Psi$ is an
+8-component real spinor (an element of the even subalgebra), and the bivector
+$I\sigma_3$ (where $\sigma_3 = \gamma_1\gamma_2$) assumes the role of the
+complex unit $i$. The software must allow for the symbolic definition and
+algebraic manipulation of this equation, enabling, for instance, the derivation
+of plane-wave solutions and the demonstration of their Lorentz covariance.
+
+\subsubsection{Interaction and Scattering Amplitudes}
+The toolkit will be equipped to handle calculations for fundamental QED
+processes, such as Compton scattering. The interaction term $j \cdot A$, where
+$j = \psi\gamma_0\tilde{\psi}$ is the conserved Dirac current and $A$ is the
+electromagnetic four-potential, is expressed naturally within the algebra. A key
+advantage of this formalism, which the software will leverage, is that the
+calculation of scattering amplitudes, which traditionally requires the tedious
+evaluation of traces of products of gamma matrices, is replaced by elegant and
+direct algebraic manipulation of multivectors.
+
+\section{A Numerical Dirac Equation Solver}
+
+\subsection{Project Goal}
+The objective of this project is to develop a high-performance, modular
+numerical solver for the time-dependent Dirac equation in 3+1 dimensions. The
+software will serve as a computational laboratory for investigating a range of
+relativistic quantum phenomena. A key design principle will be a flexible
+architecture that allows for the straightforward implementation of arbitrary
+external potentials and boundary conditions, enabling the simulation of fermion
+dynamics in diverse physical scenarios, from quantum electrodynamics (QED) to
+particle physics in curved spacetime.
+
+\subsection{Core Architecture and Numerical Methods}
+
+The solver will be engineered to find solutions $\psi(\mathbf{x}, t)$ to the
+time-dependent Dirac equation:
+\[
+	i\hbar \frac{\partial \psi}{\partial t} = \hat{H}\psi = \left[
+	c\boldsymbol{\alpha} \cdot (\hat{\mathbf{p}} - q\mathbf{A}) + q\phi + \beta
+m_0 c^2 \right] \psi
+\]
+where $\boldsymbol{\alpha}$ and $\beta$ are the standard Dirac matrices, $(\phi,
+\mathbf{A})$ is the electromagnetic four-potential, and $\psi$ is a
+four-component spinor.
+
+The numerical evolution will be implemented using a \textbf{Split-Operator
+Fourier Transform method}. This pseudo-spectral technique is particularly
+well-suited for the Dirac equation as it naturally handles the stiff spatial
+derivative term ($\boldsymbol{\alpha} \cdot \hat{\mathbf{p}}$) with high
+accuracy in momentum space while applying the potential term in position space.
+This method offers excellent stability and preserves the unitarity of the time
+evolution, which is critical for long-term simulations. The core solver will be
+built on a modular C++ or Python backend, with a user-friendly interface for
+defining the simulation grid, initial wavepacket conditions, and potential
+functions.
+
+\subsection{Key Research Applications}
+
+\subsubsection{Probing QED Phenomena}
+
+The solver's primary application will be the simulation of single-particle QED
+effects where an external classical field is dominant. The user can define
+arbitrary electromagnetic fields by specifying the scalar potential
+$\phi(\mathbf{x}, t)$ and vector potential $\mathbf{A}(\mathbf{x}, t)$.
+\begin{itemize}
+	\item \textbf{Klein Tunneling:} A key benchmark for the solver will be the
+		simulation of Klein tunneling. A sharp potential barrier $V_0$ approaching
+		or exceeding the rest-mass energy gap ($V_0 \gtrsim 2m_0c^2$) will be
+		implemented. The solver will evolve an incident fermion wavepacket and
+		compute the transmission and reflection coefficients. This will allow for a
+		direct observation of the paradoxical high-transmission regime, a signature
+		of spontaneous pair creation at the barrier, which is a fundamental
+		prediction of QED.
+	\item \textbf{Wavepacket Dynamics:} The software will enable the study of
+		relativistic wavepacket evolution in complex electromagnetic fields, such as
+		the cyclotron motion in a uniform magnetic field, the acceleration of a
+		spinor in an electric field, and scattering from localized potential wells.
+\end{itemize}
+
+\subsubsection{Explorations in Curved Spacetime (Gauge Theory Gravity)}
+A long-term and highly innovative goal for this project is to extend the solver
+to incorporate gravitational interactions as described by Gauge Theory Gravity
+(GTG) or the standard semi-classical formalism. This involves solving the Dirac
+equation in a curved spacetime background, where the equation takes the form.
+\[
+	\left( i\gamma^\mu D_\mu - m \right)\psi = 0
+\]
+Here, the Dirac matrices $\gamma^\mu(x)$ become position-dependent, and the
+derivative $D_\mu = \partial_\mu + \frac{i}{4}\omega_{\mu}^{ab}\sigma_{ab}$ is
+the covariant derivative, which couples the spinor to the spacetime geometry via
+the spin connection $\omega_{\mu}^{ab}$. The solver's modular design will allow
+for the implementation of this covariant derivative, with the spacetime metric
+$g_{\mu\nu}(x)$ (and its corresponding spin connection) supplied by the user.
+
+This extension would open the door to simulating phenomena at the intersection
+of quantum mechanics and general relativity:
+\begin{itemize}
+	\item \textbf{Gravitationally-Induced Zitterbewegung:} The solver could track
+		the trajectory of a localized wavepacket in a gravitational potential. This
+		would allow for a numerical investigation of how the Zitterbewegung---the
+		rapid oscillatory motion intrinsic to the Dirac particle---is affected by
+		spacetime curvature.
+	\item \textbf{Fermions near Black Holes:} By implementing a background metric
+		for a non-rotating (Schwarzschild) or rotating (Kerr) black hole, the solver
+		could simulate the scattering, absorption, and superradiant effects of a
+		fermion wavepacket interacting with the event horizon.
+	\item \textbf{Foundations of Particle Creation:} As an ultimate exploratory
+		goal, the framework could be used to study the foundational aspects of
+		particle creation in strong gravitational fields. By analyzing the evolution
+		of quantum modes in the presence of an event horizon, the solver could
+		provide insights into the mechanisms underlying phenomena such as Hawking
+		radiation, bridging the gap between single-particle relativistic quantum
+		mechanics and quantum field theory in curved spacetime.
+\end{itemize}
+
+\section{Comparative Analysis and Challenges}
+
+\subsection{Implementation Challenges}
+Both proposed projects present distinct and significant technical challenges.
+\begin{itemize}
+	\item \textbf{QED Toolkit (STA):} The primary challenge lies in the
+		development of a robust and efficient symbolic algebra engine. Implementing
+		the geometric product and other multivector operations in a computationally
+		performant manner is non-trivial. Furthermore, translating high-level QED
+		concepts, particularly beyond tree-level processes, into the STA formalism
+		requires deep theoretical understanding and sophisticated software
+		architecture.
+	\item \textbf{Numerical Dirac Solver:} The challenges are predominantly
+		numerical and computational. Ensuring the stability and accuracy of the
+		time-evolution algorithm, especially for scenarios involving sharp potential
+		gradients (Klein tunneling) or complex geometries (curved spacetime), is
+		paramount. Managing the significant computational resources (memory and CPU
+		time) required for 3D+1 simulations is a major engineering hurdle. The
+		implementation of the covariant derivative for gravitational coupling is
+		mathematically intensive and requires careful validation.
+\end{itemize}
+
+\subsection{Comparison of Project Philosophies}
+The two proposals, while rooted in the same physical theory, represent
+fundamentally different approaches to computational physics.
+
+\begin{itemize}
+	\item \textbf{Methodology:} The QED Toolkit is fundamentally an
+		\textbf{algebraic and symbolic} project. Its goal is to create a new
+		language for expressing physical laws, focusing on structural elegance and
+		analytical manipulation. In contrast, the Dirac Solver is a
+		\textbf{numerical and simulation-based} project, aimed at calculating the
+		dynamical evolution of quantum systems in specific, often analytically
+		intractable, scenarios.
+	\item \textbf{Scope and Innovation:} The innovation of the STA toolkit lies in
+		its novel \textbf{computational framework}, offering a new paradigm for
+		theoretical calculations. Its scope is broad and foundational. The Dirac
+		Solver's innovation lies in its \textbf{application to frontier problems},
+		pushing the boundaries of what can be simulated. Its scope is deep and
+		application-focused.
+	\item \textbf{Outcome:} A successful QED Toolkit would yield a powerful new
+		tool for theoretical physicists, potentially simplifying complex analytical
+		derivations. A successful Dirac Solver would produce a virtual laboratory
+		for exploring concrete physical phenomena, yielding data, visualizations,
+		and direct insights into particle behavior in extreme conditions.
+\end{itemize}
+
+\end{document}

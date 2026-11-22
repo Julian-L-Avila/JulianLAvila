@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you reference works, software, or materials from this research portfolio, please cite using the metadata below."
+authors:
+  - family-names: "Avila-Martinez"
+    given-names: "Julian L."
+    orcid: "https://orcid.org/0009-0002-8630-1922"
+    affiliation: "Programa Académico de Física, Facultad de Ciencias Matemáticas y Naturales, Universidad Distrital Francisco José de Caldas"
+    email: "jlavilam@udistrital.edu.co"
+title: "Julian L. Avila-Martinez — Research Profile, Computational Physics & Academic Portfolio"
+abstract: "Research profile and project index of Julian L. Avila-Martinez in mathematical and theoretical physics, computational physics, nanomaterials, and applied systems engineering. Covers real Clifford algebras, spin geometry, foundations of the Chiral Dirac equation, topological phases of matter, numerical methods for PDEs and relativistic wave equations, scientific machine learning, seminar materials, and public talks."
+url: "https://github.com/Julian-L-Avila/JulianLAvila"
+repository-code: "https://github.com/Julian-L-Avila/JulianLAvila"
+keywords:
+  - "Clifford Algebras"
+  - "Spacetime Algebra"
+  - "Chiral Dirac Equation"
+  - "Topological Phases of Matter"
+  - "Computational Physics"
+  - "Scientific Machine Learning"
+  - "Nanomaterials"
+license: "GPL-3.0-or-later"

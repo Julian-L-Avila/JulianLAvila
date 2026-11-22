@@ -1,0 +1,118 @@
+\documentclass[11pt, a4paper, oneside, numbers=noenddot]{book}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{float}
+\usepackage{epigraph}
+\usepackage[toc,page]{appendix}
+\usepackage[bottom]{footmisc}
+
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{siunitx}
+\usepackage{derivative}
+\usepackage{tikz-cd}
+\usepackage{geometry}
+\geometry{
+  top=3cm,
+  bottom=3cm,
+  left=2.5cm,
+  right=2.5cm,
+  headheight=16pt,
+  headsep=18pt
+}
+\usepackage{xcolor}
+\usepackage{tikz}
+
+\usepackage[backend=biber]{biblatex}
+\addbibresource{../grad-work-references.bib}
+
+\usepackage[
+  colorlinks=false,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+]{hyperref}
+\usepackage{cleveref}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{proposition}[theorem]{Proposition}
+
+\setlength{\epigraphwidth}{0.6\textwidth}
+\renewcommand{\epigraphsize}{\small}
+\DeclarePairedDelimiterX{\grade}[2]{\langle}{\rangle_{#2}}{#1}
+\newcommand{\lc}{\mathbin{\rfloor}}
+\newcommand{\rc}{\mathbin{\lfloor}}
+\DeclareMathOperator{\D}{D}
+
+\begin{document}
+
+\frontmatter
+
+\begin{titlepage}
+  \centering
+  \vspace*{1cm}
+
+  \includegraphics[width=0.4\textwidth]{../figures/logo-ud.pdf}\\[1cm]
+
+  {\Large \textsc{Universidad Distrital Francisco José de Caldas}}\\[0.5cm]
+  {\large Facultad de Ciencias Matemáticas y Naturales}\\[0.2cm]
+  {\large Programa Académico de Física}\\[1cm]
+
+  {\huge \textbf{Foundations of the Dirac Equation:}\\[0.3cm]
+  From Relativistic Principles to Clifford Algebras}\\[1.25cm]
+
+  {\Large Julian L. Avila-Martinez}\\[1.25cm]
+
+  A monograph submitted as a partial requirement for the\\
+  undergraduate degree in Physics.\\[1.25cm]
+
+  Modality: Monograph\\[1cm]
+
+  Advisor:\\
+  Asdrúbal Moreno Mosquera\\[1.25cm]
+
+  \vfill
+
+  Bogotá, Colombia\\
+  August 2026
+\end{titlepage}
+
+\include{./frontmatter/abstract.tex}
+\include{./frontmatter/acknowledgements.tex}
+
+\tableofcontents
+\listoffigures
+\noindent\textit{Note: All figures in this work are original diagrams
+constructed by the author using TikZ, unless an explicit citation to an
+external source is indicated.}
+
+\listoftables
+
+\include{./appendices/notation-and-conventions.tex}
+
+\mainmatter
+\include{./chapters/chapter-introduction.tex}
+\include{./chapters/chapter-historical-context.tex}
+\include{./chapters/chapter-clifford-algebras.tex}
+\include{./chapters/chapter-dirac-equation.tex}
+\include{./chapters/chapter-consequences.tex}
+
+\begin{appendices}
+\include{./appendices/appendix-algebraic-preliminaries.tex}
+\end{appendices}
+
+\backmatter
+\printbibliography
+
+\end{document}
