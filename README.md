@@ -127,7 +127,7 @@ All computational notebooks (`.ipynb`) and simulation kernels (`.py`, `.cpp`, `.
 - **Personal Email:** [`julianlavilam@gmail.com`](mailto:julianlavilam@gmail.com)
 - **ORCID:** [`https://orcid.org/0009-0002-8630-1922`](https://orcid.org/0009-0002-8630-1922)
 - **Minciencias CvLAC:** [`cod_rh=0002012647`](https://scienti.minciencias.gov.co/cvlac/visualizador/generarCurriculoCv.do?cod_rh=0002012647)
-- **LinkedIn:** [`https://linkedin.com/in/julian-l-avila`](https://linkedin.com/in/julian-l-avila)
+- **LinkedIn:** [`https://co.linkedin.com/in/julian-avila-321161285`](https://co.linkedin.com/in/julian-avila-321161285)
 - **Academic References:**
   - **Dr. Asdrúbal Moreno-Mosquera** — Tenured Professor & Physics Coordinator, UDFJC (Ph.D. in Physics, Universidad de Salamanca, Spain — IUFFyM) · [`amorenom@udistrital.edu.co`](mailto:amorenom@udistrital.edu.co)
   - **Dr. José Alfonso Leyva Rojas** — Tenured Professor, Pontificia Universidad Javeriana (Ph.D. in Physics, JGU Mainz, Germany) · [`leyvaa@javeriana.edu.co`](mailto:leyvaa@javeriana.edu.co)
