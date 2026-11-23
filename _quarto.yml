@@ -10,6 +10,7 @@ project:
     - "assets/**"
     - "robots.txt"
     - "sitemap.xml"
+    - "google235c06eb331003f1.html"
     - ".nojekyll"
 
 website:
